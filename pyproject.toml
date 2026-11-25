@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xscape-ate"
+version = "0.1.0"
+description = "Modular test automation system for an 8-channel optical module, with simulated instruments"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyvisa>=1.13",
+    "pyvisa-py>=0.7",
+    "pydantic>=2.5",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+ate = "ate.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "slow: longer statistical tests (run by default; skip with -m 'not slow')",
+    "network: starts a real simulator bench on local ports",
+]

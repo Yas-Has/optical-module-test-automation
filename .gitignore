@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Environments
+.venv/
+venv/
+
+# Tools
+.pytest_cache/
+.DS_Store
+.vscode/
+.idea/
+
+# Test run output (sample_results/ is committed on purpose)
+results/
