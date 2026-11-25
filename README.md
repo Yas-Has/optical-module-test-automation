@@ -47,7 +47,7 @@ ate run --config config/examples/weak_channel.yaml
 
 ate validate --config my.yaml           # check a config without running anything
 ate reprocess results/<run-folder>      # re-analyse saved data without re-testing
-ate reprocess results/<run> --config strict.yaml   # new limits -> new summary file, original untouched
+ate reprocess results/<run> --config strict.yaml   # new limits -> new summary + charts, originals untouched
 ate plot results/<run-folder>           # draw the charts for a saved run (e.g. one made before charts existed)
 
 ate bench                               # start the simulators and leave them running...
@@ -60,7 +60,7 @@ Exit codes: `0` device passed, `1` device failed, `2` run aborted or invalid inp
 
 | Config | Shows |
 |---|---|
-| `config/default.yaml` | The brief: 40 °C ± 0.5, 50 readings × 8 channels, −3 to +3 dBm |
+| `config/default.yaml` | The brief: 40 °C ± 0.5, 50 readings × 8 channels, −3 to +3 dBm, all readings valid (`limits.max_bad_readings: 0`; raise it to allow a few bad readings per channel) |
 | `examples/weak_channel.yaml` | Channel 5 is 4 dB dim. All readings valid, channel fails on average power |
 | `examples/flaky_meter.yaml` | High fault rates. Retries, single-channel re-reads, invalid readings kept |
 | `examples/tec_wont_settle.yaml` | TEC settles 0.8 °C too hot. Two settling attempts, verification fails, light still measured |
@@ -72,7 +72,7 @@ Example configs use `extends: ../default.yaml` and override only what differs.
 ### Running the tests
 
 ```bash
-pytest                    # full suite (about 11 s)
+pytest                    # full suite (about 10 s)
 pytest tests/instruments/tec          # just one part, e.g. the TEC
 pytest -m "not slow"      # skip the 200-run statistical check
 pytest -m "not network"   # skip tests that open local network ports
@@ -145,7 +145,7 @@ See [docs/DESIGN.md](docs/DESIGN.md) for the full explanation.
 | `temperature_<condition>.png` | TEC temperature over time against the target band, settling attempts, and when light was measured |
 | `status_<condition>.png` | One square per planned reading, coloured by what happened: valid, valid after retry, timeout/garbled, invalid, not measured |
 
-Charts are drawn at the end of every run when matplotlib is installed (`pip install ".[plots]"`; included in `.[dev]`). Turn them off with `run.save_plots: false`. They are a convenience: if matplotlib is missing or a chart fails to draw, the run and its data are unaffected.
+Charts are drawn at the end of every run when matplotlib is installed (`pip install ".[plots]"`; included in `.[dev]`). Turn them off with `run.save_plots: false`. Charts follow the config: limit lines, the target band, pass/fail colours and the number of readings all come from it. Re-checking a run against new limits (`ate reprocess --config`) draws a second set of charts with the same `_reprocessed_<time>` name as the new summary, leaving the originals alone. They are a convenience: if matplotlib is missing or a chart fails to draw, the run and its data are unaffected.
 
 ---
 
@@ -172,7 +172,7 @@ Details: [docs/DESIGN.md §14](docs/DESIGN.md#14-extensibility).
 
 ## Testing approach (summary)
 
-201 automated tests, running in about 11 seconds (details and results in [docs/TESTING.md](docs/TESTING.md)). **The `tests/` folder mirrors `src/ate/`**: each part is tested next to where it lives, and only `tests/system/` tests the whole program together.
+208 automated tests, running in about 10 seconds (details and results in [docs/TESTING.md](docs/TESTING.md)). **The `tests/` folder mirrors `src/ate/`**: each part is tested next to where it lives, and only `tests/system/` tests the whole program together.
 
 | Tests | Check |
 |---|---|

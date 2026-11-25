@@ -75,6 +75,16 @@ def _title(ax, text: str, subtitle: str) -> None:
 # --------------------------------------------------------------------------- 1. power
 
 
+def _allowance(config: AppConfig) -> str:
+    """How many bad readings the limits allow, shown under each channel when it isn't zero."""
+    limits = config.limits
+    if not limits.require_all_valid:
+        return " Any number of bad readings allowed."
+    if limits.max_bad_readings:
+        return f" Up to {limits.max_bad_readings} bad reading(s) allowed per channel."
+    return ""
+
+
 def plot_power(path: Path, finals: list[RawRow], cond: ConditionResult, config: AppConfig) -> None:
     from matplotlib.lines import Line2D
     from matplotlib.patches import Patch
@@ -132,8 +142,10 @@ def plot_power(path: Path, finals: list[RawRow], cond: ConditionResult, config: 
 
     failed = sum(1 for ch in channels if ch.result != "PASS")
     _title(ax, f"Optical power per channel, {cond.label}",
-           f"{len(channels) - failed} of {len(channels)} channels pass. "
-           "Box = middle half of the valid readings, line = median, whiskers = spread, dots = outliers.")
+           f"{len(channels) - failed} of {len(channels)} channels pass.{_allowance(config)}")
+    ax.text(0.5, -0.29, "Box = middle half of the valid readings, line = median, whiskers = spread, "
+            "dots = outliers. Bad readings are never drawn.", transform=ax.transAxes, ha="center",
+            va="top", fontsize=8, color=MUTED)
     ax.legend(
         handles=[Patch(facecolor=BAND, edgecolor=SERIES[0], label="channel passed"),
                  Patch(facecolor="#f6d4d4", edgecolor=CRITICAL, label="channel failed"),
@@ -270,14 +282,18 @@ def plot_status(path: Path, all_rows: list[RawRow], finals: list[RawRow], cond: 
 # --------------------------------------------------------------------------- all of them
 
 
-def write_plots(run_dir: Path, rows: list[RawRow], summary: RunSummary, config: AppConfig) -> list[Path]:
-    """Draw every chart for a run into its folder. Returns the files written."""
+def write_plots(run_dir: Path, rows: list[RawRow], summary: RunSummary, config: AppConfig,
+                suffix: str = "") -> list[Path]:
+    """Draw every chart for a run into its folder. Returns the files written.
+
+    ``suffix`` keeps re-processed charts (new limits) apart from the originals, which are never overwritten.
+    """
     run_dir = Path(run_dir)
     finals = final_attempts(rows)
     conditions = {c.label: c for c in config.sequence.conditions}
     written = []
     for cond in summary.conditions:
-        name = _safe(cond.label)
+        name = _safe(cond.label) + suffix
         jobs = [
             (f"power_{name}.png", lambda p: plot_power(p, finals, cond, config)),
             (f"temperature_{name}.png", lambda p: plot_temperature(p, finals, cond, conditions[cond.label], config)),
@@ -289,8 +305,9 @@ def write_plots(run_dir: Path, rows: list[RawRow], summary: RunSummary, config: 
     return written
 
 
-def plot_run(run_dir: Path) -> list[Path]:
-    """Draw the charts for a saved run (``ate plot``), using the config it was run with."""
+def plot_run(run_dir: Path, config_path: Path | None = None, suffix: str = "") -> list[Path]:
+    """Draw the charts for a saved run: with the config it was run with (``ate plot``), or with new
+    limits from another config (``ate reprocess --config``, which passes a suffix)."""
     from ate.config import load_config
     from ate.data.analysis import analyze, load_raw_rows
     from ate.data.report import CONFIG_FILE, RAW_FILE, RUN_INFO_FILE, read_json
@@ -299,9 +316,9 @@ def plot_run(run_dir: Path) -> list[Path]:
     raw_path = run_dir / RAW_FILE
     if not raw_path.is_file():
         raise FileNotFoundError(f"no {RAW_FILE} in {run_dir}")
-    config = load_config(run_dir / CONFIG_FILE)
+    config = load_config(config_path or run_dir / CONFIG_FILE)
     info = read_json(run_dir / RUN_INFO_FILE) if (run_dir / RUN_INFO_FILE).is_file() else {}
     rows = load_raw_rows(raw_path)
     summary = analyze(rows, config, info.get("run_id", run_dir.name),
                       info.get("device_serial", config.run.device_serial))
-    return write_plots(run_dir, rows, summary, config)
+    return write_plots(run_dir, rows, summary, config, suffix)

@@ -208,7 +208,7 @@ def _channel_result(rows: list[RawRow], all_rows: list[RawRow], cond: Condition,
 
     if not values:
         result.fail_reasons.append("no_valid_readings")
-    elif limits.require_all_valid and result.valid_count < expected:
+    elif limits.require_all_valid and expected - result.valid_count > limits.max_bad_readings:
         result.fail_reasons.append(f"invalid_readings({expected - result.valid_count}/{expected})")
     if result.avg_dbm is not None:
         # Compare at a fixed resolution so the limits are truly inclusive: converting -3 dBm to mW

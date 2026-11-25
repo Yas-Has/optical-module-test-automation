@@ -63,6 +63,15 @@ def cmd_reprocess(args: argparse.Namespace) -> int:
     summary, out = reprocess_run(Path(args.run_dir), Path(args.config) if args.config else None)
     print(format_summary(summary))
     print(f"\nSummary written to {out}")
+    if args.config:  # new limits: draw matching charts next to the originals (never over them)
+        from ate.data.plots import plot_run, plots_available
+
+        if plots_available():
+            suffix = out.stem.removeprefix("summary")  # e.g. _reprocessed_20261124-153000
+            for path in plot_run(Path(args.run_dir), Path(args.config), suffix):
+                print(f"Chart written to {path}")
+        else:
+            print('Charts not redrawn: matplotlib is not installed (pip install ".[plots]")')
     return 0 if summary.overall_result == "PASS" else 1
 
 

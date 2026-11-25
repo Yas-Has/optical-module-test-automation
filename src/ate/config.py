@@ -144,6 +144,7 @@ class PowerLimits(_Model):
 class LimitsConfig(_Model):
     avg_power_dbm: PowerLimits = Field(default_factory=PowerLimits)
     require_all_valid: bool = True
+    max_bad_readings: int = Field(0, ge=0)  # with require_all_valid: readings per channel allowed to not end VALID
     retry_warning_fraction: float = Field(0.05, ge=0, le=1)
     temp_drift_warning: bool = True
 
@@ -236,6 +237,13 @@ class AppConfig(_Model):
             for inst in self.instruments:
                 if inst.address == "auto":
                     problems.append(f"{inst.name}: real hardware needs a real address, not 'auto'")
+
+        readings = self.sequence.measurement.readings_per_channel
+        if self.limits.require_all_valid and self.limits.max_bad_readings >= readings:
+            problems.append(
+                f"limits.max_bad_readings ({self.limits.max_bad_readings}) must be less than "
+                f"readings_per_channel ({readings}); to accept any number, set require_all_valid: false"
+            )
 
         tec_names = {t.name for t in self.tecs()}
         for cond in self.sequence.conditions:

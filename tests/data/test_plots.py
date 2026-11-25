@@ -8,7 +8,7 @@ from ate.cli import main
 from ate.data import plots
 from ate.data.analysis import RawRow, final_attempts, load_raw_rows
 from ate.data.models import Status
-from tests.helpers import build_config, load_data, run
+from tests.helpers import CONFIG_DIR, build_config, load_data, run
 
 pytest.importorskip("matplotlib")
 
@@ -80,3 +80,24 @@ def test_plot_command_draws_charts_for_an_old_run(tmp_path, capsys):
 
 def test_plot_command_on_a_folder_without_data_is_an_error(tmp_path):
     assert main(["plot", str(tmp_path)]) == 2
+
+
+def test_the_power_chart_label_shows_how_many_bad_readings_are_allowed(tmp_path):
+    assert plots._allowance(build_config(tmp_path)) == ""
+    assert "Up to 2 bad reading(s) allowed" in plots._allowance(build_config(tmp_path, limits__max_bad_readings=2))
+    assert "Any number" in plots._allowance(build_config(tmp_path, limits__require_all_valid=False))
+
+
+def test_reprocess_with_new_limits_draws_new_charts_and_keeps_the_originals(tmp_path, capsys):
+    result = run(build_config(tmp_path, clean=True, run__save_plots=True))
+    originals = {p.name: p.read_bytes() for p in result.run_dir.glob("*.png")}
+    strict = tmp_path / "strict.yaml"
+    strict.write_text(f"extends: {CONFIG_DIR / 'default.yaml'}\nlimits:\n  avg_power_dbm: {{min: -0.1, max: 0.1}}\n")
+
+    assert main(["reprocess", str(result.run_dir), "--config", str(strict)]) == 1  # ch 4 now fails
+    summary_file = next(result.run_dir.glob("summary_reprocessed_*.csv"))
+    suffix = summary_file.stem.removeprefix("summary")
+    new = sorted(p.name for p in result.run_dir.glob(f"*{suffix}.png"))
+    assert new == [f"power_40C{suffix}.png", f"status_40C{suffix}.png", f"temperature_40C{suffix}.png"]
+    assert {p.name: p.read_bytes() for p in result.run_dir.glob("*_40C.png")} == originals
+    assert "Chart written to" in capsys.readouterr().out

@@ -75,6 +75,7 @@ sequence:
 
 limits:
   avg_power_dbm: { min: -3.0, max: 3.0 }
-  require_all_valid: true         # all 50 readings must be valid
+  require_all_valid: true         # readings must be valid (false = any number of bad readings is accepted)
+  max_bad_readings: 0             # ...except this many per channel (invalid, timed out, garbled or not measured)
   retry_warning_fraction: 0.05    # warn if a channel needed retries on >5% of its readings
   temp_drift_warning: true        # warn if the temperature leaves tolerance during measurement

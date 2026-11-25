@@ -3,11 +3,11 @@
 How the system was verified, including error scenarios. All checks are automated and run with:
 
 ```bash
-pytest                         # 201 tests, about 11 seconds
+pytest                         # 208 tests, about 10 seconds
 pytest tests/instruments/tec   # or just one part
 ```
 
-**Result at time of writing: 201 passed, 0 failed** (Python 3.13.1, macOS). Before the charts were added, the 193 tests then in the suite passed on 12 consecutive full runs (see §8, issue 3).
+**Result at time of writing: 208 passed, 0 failed** (Python 3.13.1, macOS). Before the charts were added, the 193 tests then in the suite passed on 12 consecutive full runs (see §8, issue 3).
 
 ---
 
@@ -47,6 +47,7 @@ Two techniques make this possible:
 - No valid readings: statistics are blank and the channel fails with `no_valid_readings`
 - Only the final attempt of each reading counts; retries are counted separately
 - A high retry rate produces a warning but not a failure
+- `max_bad_readings`: with 2 bad readings out of 3, a channel fails when 0 or 1 are allowed and passes when 2 are; bad readings stay out of the statistics either way, and allowing them never rescues a channel whose average is outside the limits
 - Temperature failure fails the device even when every channel passes
 - Stability: an invalid reading restarts the window, and a temperature **still rising through** the tolerance band is not counted as stable
 
@@ -73,10 +74,12 @@ Two techniques make this possible:
 - A run saves three charts per condition (six for the two-temperature config), and none when `save_plots` is off
 - **Charts can never break a run:** with matplotlib missing, or with a chart that fails to draw, the run still completes, the summary is still written, and the log says why there are no charts
 - `ate plot` draws charts for an old run, and reports an error for a folder with no data
+- `ate reprocess --config` with new limits draws a second, separately named set of charts; the original charts are byte-for-byte unchanged
+- The power chart says how many bad readings the limits allow
 
 Charts are left out of every other test (`save_plots: false` in the test helper), so the suite stays fast.
 
-**Configuration** (`tests/config/test_config.py`): each validation rule produces its plain-language error. The rules covered are reversed limits, offsets/channel-count mismatch, interval shorter than averaging, timeout not longer than averaging, a stable window longer than max wait, a time scale outside 0–1, fault rate > 1, typos in setting names (including inside an instrument's own settings), duplicate instrument names, unknown instrument types (with the list of known ones), a channel wired to two meters or none, too many channels for a meter, `auto` addresses with real hardware, no TEC, and duplicate condition names. Also checked:
+**Configuration** (`tests/config/test_config.py`): each validation rule produces its plain-language error. The rules covered are reversed limits, offsets/channel-count mismatch, interval shorter than averaging, timeout not longer than averaging, a stable window longer than max wait, a time scale outside 0–1, fault rate > 1, allowing as many bad readings as are taken, typos in setting names (including inside an instrument's own settings), duplicate instrument names, unknown instrument types (with the list of known ones), a channel wired to two meters or none, too many channels for a meter, `auto` addresses with real hardware, no TEC, and duplicate condition names. Also checked:
 - each instrument's settings are handled by the settings model in its own folder
 - every example config is valid
 - `extends:` inherits everything not overridden

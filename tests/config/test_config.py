@@ -55,6 +55,12 @@ def test_limits_must_be_ordered():
     assert "must be below max" in problems(load_data(), limits__avg_power_dbm={"min": 3, "max": -3})
 
 
+def test_allowed_bad_readings_must_be_fewer_than_the_readings_taken():
+    assert "max_bad_readings (50) must be less than readings_per_channel (50)" in problems(
+        load_data(), limits__max_bad_readings=50)
+    parse_config(load_data(), overrides={"limits.max_bad_readings": 50, "limits.require_all_valid": False})
+
+
 def test_offsets_must_match_channel_count():
     assert "channel_offsets_db has 2 values" in problems(load_data(), simulation__device__channel_offsets_db=[0, 0])
 

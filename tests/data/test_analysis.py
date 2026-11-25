@@ -101,6 +101,20 @@ def test_require_all_valid_can_be_relaxed(tmp_path):
     assert analyse(tmp_path, rows, limits__require_all_valid=False).conditions[0].channels[0].result == PASS
 
 
+@pytest.mark.parametrize("allowed, result", [(0, FAIL), (1, FAIL), (2, PASS)])
+def test_a_set_number_of_bad_readings_can_be_allowed(tmp_path, allowed, result):
+    rows = [meas(1, 0.0), meas(2, None, Status.INVALID), meas(3, None, Status.TIMEOUT)]  # 2 bad of 3
+    ch = analyse(tmp_path, rows, limits__max_bad_readings=allowed).conditions[0].channels[0]
+    assert ch.result == result
+    assert ch.avg_dbm == 0.0  # bad readings never enter the statistics, allowed or not
+
+
+def test_allowed_bad_readings_do_not_rescue_a_channel_outside_the_limits(tmp_path):
+    rows = [meas(1, -4.0), meas(2, None, Status.INVALID), meas(3, -4.0)]
+    ch = analyse(tmp_path, rows, limits__max_bad_readings=1).conditions[0].channels[0]
+    assert ch.result == FAIL and ch.fail_reasons == ["avg_below_min"]
+
+
 def test_only_the_final_attempt_counts(tmp_path):
     rows = [meas(1, None, Status.TIMEOUT, attempt=1), meas(1, 0.0, attempt=2), meas(2, 0.0), meas(3, 0.0)]
     ch = analyse(tmp_path, rows).conditions[0].channels[0]
