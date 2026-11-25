@@ -1,4 +1,4 @@
-"""Command line: ``ate run``, ``ate bench``, ``ate reprocess``, ``ate validate``.
+"""Command line: ``ate run``, ``ate bench``, ``ate reprocess``, ``ate plot``, ``ate validate``.
 
 Exit codes: 0 = device PASS (or command succeeded), 1 = device FAIL, 2 = run aborted or bad input.
 """
@@ -66,6 +66,17 @@ def cmd_reprocess(args: argparse.Namespace) -> int:
     return 0 if summary.overall_result == "PASS" else 1
 
 
+def cmd_plot(args: argparse.Namespace) -> int:
+    from ate.data.plots import plot_run, plots_available
+
+    if not plots_available():
+        print('Charts need matplotlib: pip install ".[plots]"', file=sys.stderr)
+        return 2
+    for path in plot_run(Path(args.run_dir)):
+        print(f"Saved {path}")
+    return 0
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     config = load_config(args.config, _overrides(args))
     print(f"{args.config} is valid.")
@@ -105,6 +116,10 @@ def build_parser() -> argparse.ArgumentParser:
     reprocess.add_argument("run_dir", help="the run's results folder")
     reprocess.add_argument("--config", help="use different limits (writes a new summary file)")
     reprocess.set_defaults(func=cmd_reprocess)
+
+    plot = sub.add_parser("plot", help="draw the charts for a saved run")
+    plot.add_argument("run_dir", help="the run's results folder")
+    plot.set_defaults(func=cmd_plot)
 
     validate = sub.add_parser("validate", help="check a config file without running anything")
     add_config(validate)

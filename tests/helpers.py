@@ -35,7 +35,7 @@ def build_config(tmp_path: Path, data: dict | None = None, *, clean: bool = Fals
     """Config for a test: results in tmp_path, in-process by default, optionally with all faults off.
     Extra keyword arguments override settings, with ``__`` for dots: sequence__measurement__read_mode="all"."""
     data = copy.deepcopy(data if data is not None else load_data())
-    data.setdefault("run", {}).update(results_dir=str(tmp_path / "results"), seed=seed)
+    data.setdefault("run", {}).update(results_dir=str(tmp_path / "results"), seed=seed, save_plots=False)
     data.setdefault("simulation", {})["mode"] = mode
     if clean:
         for inst in data["instruments"]:

@@ -8,7 +8,7 @@ Physical instruments are not available, so they are **simulated**. The simulator
 |---|---|
 | [docs/DESIGN.md](docs/DESIGN.md) | Full design: understanding the data, architecture, error handling, extensibility |
 | [docs/TESTING.md](docs/TESTING.md) | How the system was verified, including every error scenario |
-| [sample_results/](sample_results/) | Example runs (raw CSV, summary CSV, logs) |
+| [sample_results/](sample_results/) | Example runs (raw CSV, summary CSV, charts, logs) |
 
 ---
 
@@ -48,6 +48,7 @@ ate run --config config/examples/weak_channel.yaml
 ate validate --config my.yaml           # check a config without running anything
 ate reprocess results/<run-folder>      # re-analyse saved data without re-testing
 ate reprocess results/<run> --config strict.yaml   # new limits -> new summary file, original untouched
+ate plot results/<run-folder>           # draw the charts for a saved run (e.g. one made before charts existed)
 
 ate bench                               # start the simulators and leave them running...
 ate run --external-bench                # ...then run tests against that bench from another terminal
@@ -71,7 +72,7 @@ Example configs use `extends: ../default.yaml` and override only what differs.
 ### Running the tests
 
 ```bash
-pytest                    # full suite (about 8 s)
+pytest                    # full suite (about 11 s)
 pytest tests/instruments/tec          # just one part, e.g. the TEC
 pytest -m "not slow"      # skip the 200-run statistical check
 pytest -m "not network"   # skip tests that open local network ports
@@ -104,7 +105,7 @@ src/ate/
 │   └── opm/             commands.py · settings.py · driver.py · simulator.py
 ├── simulation/      the bench as a whole: virtual device, clock, seeds, faults, ports
 ├── sequence/        the test recipe: settle, verify, measure, retry, clean up
-├── data/            streaming raw recorder, statistics + pass/fail, reports
+├── data/            streaming raw recorder, statistics + pass/fail, reports, charts
 ├── config.py        loads + validates the YAML settings
 └── cli.py           the `ate` command
 ```
@@ -115,7 +116,7 @@ src/ate/
 | `instruments/<name>/` | Everything about one instrument: command words, settings, driver, simulator | Only itself (and `core/`) |
 | `simulation/` | The shared virtual device, simulated clock, faults, the bench program | No specific instrument |
 | `sequence/` | The 8-step recipe and its policies | Roles only ("a temperature controller"), never a specific instrument |
-| `data/` | Raw recording, analysis, reports | Measurements only |
+| `data/` | Raw recording, analysis, reports, charts | Measurements only |
 
 Key design points:
 
@@ -140,6 +141,11 @@ See [docs/DESIGN.md](docs/DESIGN.md) for the full explanation.
 | `config_used.yaml` | The exact configuration of this run (re-run it with `--config`) |
 | `run.log` | Human-readable log of everything that happened |
 | `bench.log` | Simulator bench output (network mode) |
+| `power_<condition>.png` | Box and whisker of each channel's valid readings, with the limits, the mW average used for pass/fail, and which channels failed |
+| `temperature_<condition>.png` | TEC temperature over time against the target band, settling attempts, and when light was measured |
+| `status_<condition>.png` | One square per planned reading, coloured by what happened: valid, valid after retry, timeout/garbled, invalid, not measured |
+
+Charts are drawn at the end of every run when matplotlib is installed (`pip install ".[plots]"`; included in `.[dev]`). Turn them off with `run.save_plots: false`. They are a convenience: if matplotlib is missing or a chart fails to draw, the run and its data are unaffected.
 
 ---
 
@@ -166,7 +172,7 @@ Details: [docs/DESIGN.md §14](docs/DESIGN.md#14-extensibility).
 
 ## Testing approach (summary)
 
-193 automated tests, running in about 8 seconds (details and results in [docs/TESTING.md](docs/TESTING.md)). **The `tests/` folder mirrors `src/ate/`**: each part is tested next to where it lives, and only `tests/system/` tests the whole program together.
+201 automated tests, running in about 11 seconds (details and results in [docs/TESTING.md](docs/TESTING.md)). **The `tests/` folder mirrors `src/ate/`**: each part is tested next to where it lives, and only `tests/system/` tests the whole program together.
 
 | Tests | Check |
 |---|---|
@@ -174,7 +180,7 @@ Details: [docs/DESIGN.md §14](docs/DESIGN.md#14-extensibility).
 | `tests/instruments/tec/`, `opm/` | Each driver's commands and reply handling; each simulator against its physics model |
 | `tests/simulation/` | The device link, fault injection, simulated clock and seeds, the bench's control commands |
 | `tests/sequence/` | The stability rule, the retry policy (each fault forced on purpose) |
-| `tests/data/` | dBm/mW math, statistics, inclusive limits, live recording, reports, re-processing |
+| `tests/data/` | dBm/mW math, statistics, inclusive limits, live recording, reports, re-processing, charts |
 | `tests/config/` | Every validation rule |
 | `tests/system/` | Full runs, failure scenarios (meter/TEC lost, Ctrl+C), network mode, CLI, and 200 seeded runs giving a 63% pass rate against the predicted 66% |
 

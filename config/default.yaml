@@ -5,6 +5,7 @@ run:
   device_serial: "SN-0001"
   results_dir: results
   seed: null                      # null = pick one; the seed used is always saved with the results
+  save_plots: true                # charts per run (needs: pip install ".[plots]"; skipped if not installed)
 
 simulation:
   enabled: true                   # false = talk to real instruments at the addresses below

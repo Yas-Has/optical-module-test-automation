@@ -3,11 +3,11 @@
 How the system was verified, including error scenarios. All checks are automated and run with:
 
 ```bash
-pytest                         # 193 tests, about 8 seconds
+pytest                         # 201 tests, about 11 seconds
 pytest tests/instruments/tec   # or just one part
 ```
 
-**Result at time of writing: 193 passed, 0 failed, on 12 consecutive full runs** (Python 3.13.1, macOS).
+**Result at time of writing: 201 passed, 0 failed** (Python 3.13.1, macOS). Before the charts were added, the 193 tests then in the suite passed on 12 consecutive full runs (see §8, issue 3).
 
 ---
 
@@ -66,6 +66,15 @@ Two techniques make this possible:
 - Roles can't be used half-implemented, and any temperature controller switches its output off when made safe
 - PyVISA over a **real network socket** against a tiny fake instrument: a reply is received, silence is a timeout (and the connection stays usable), and an instrument that has vanished is reported as a lost connection rather than a timeout
 - The bench's control commands, port assignment (automatic and explicit), detection of busy ports, and the in-process transport
+
+**Charts** (`tests/data/test_plots.py`, skipped if matplotlib isn't installed):
+- Every reading lands in the right colour group (valid, valid after retry, timeout/garbled, invalid, not measured)
+- On the flaky-meter run, the status grid's counts agree with the summary for every channel
+- A run saves three charts per condition (six for the two-temperature config), and none when `save_plots` is off
+- **Charts can never break a run:** with matplotlib missing, or with a chart that fails to draw, the run still completes, the summary is still written, and the log says why there are no charts
+- `ate plot` draws charts for an old run, and reports an error for a folder with no data
+
+Charts are left out of every other test (`save_plots: false` in the test helper), so the suite stays fast.
 
 **Configuration** (`tests/config/test_config.py`): each validation rule produces its plain-language error. The rules covered are reversed limits, offsets/channel-count mismatch, interval shorter than averaging, timeout not longer than averaging, a stable window longer than max wait, a time scale outside 0–1, fault rate > 1, typos in setting names (including inside an instrument's own settings), duplicate instrument names, unknown instrument types (with the list of known ones), a channel wired to two meters or none, too many channels for a meter, `auto` addresses with real hardware, no TEC, and duplicate condition names. Also checked:
 - each instrument's settings are handled by the settings model in its own folder
@@ -176,6 +185,8 @@ After the restructure into one folder per instrument, seed 42 was run again over
 | `20261123-182558_SN-FLAKY_b4d5` | flaky_meter | 2 | FAIL: 492 VALID, 40 TIMEOUT, 24 GARBLED, 5 INVALID rows, each handled by the right rule |
 | `20261123-182602_SN-HOT_f4b5` | tec_wont_settle | 2 | FAIL: temperature never verified, light still measured |
 | `20261123-182603_SN-0001_5873` | two_temperatures | 2 | PASS at 25 °C and 40 °C |
+
+The charts in each sample folder were added afterwards with `ate plot`, from the saved raw data (the data itself is unchanged). Each chart was checked by eye against its run: channel 5 below the lower limit in the weak-channel run, the TEC levelling off above the band in the hot run, and retry columns and single re-read squares in the flaky run.
 
 ---
 

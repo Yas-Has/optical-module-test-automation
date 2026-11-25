@@ -152,6 +152,7 @@ class RunConfig(_Model):
     device_serial: str = Field("SN-0001", min_length=1)
     results_dir: str = "results"
     seed: int | None = None
+    save_plots: bool = True  # charts at the end of each run (needs matplotlib; skipped if missing)
 
 
 # --------------------------------------------------------------------------- top level

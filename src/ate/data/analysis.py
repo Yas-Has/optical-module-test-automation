@@ -55,6 +55,7 @@ class RawRow:
     attempt: int
     value: float | None
     status: Status
+    elapsed_s: float | None = None  # time since the run started (used by the charts)
 
 
 def _int(text: str) -> int | None:
@@ -79,6 +80,7 @@ def load_raw_rows(path: Path) -> list[RawRow]:
                 attempt=int(row["attempt"]),
                 value=_float(row["value"]),
                 status=Status(row["status"]),
+                elapsed_s=_float(row.get("sim_elapsed_s", "")),
             )
             for row in csv.DictReader(handle)
         ]

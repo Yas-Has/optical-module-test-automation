@@ -168,6 +168,7 @@ class TestRunner:
             # steps 5-7: always from the raw file, the single source of truth
             summary = analyze(load_raw_rows(run_dir / RAW_FILE), config, run_id, serial)
             write_summary_csv(run_dir / SUMMARY_FILE, summary, config)
+            self._save_plots(run_dir, summary)
             if status == COMPLETE and self._dead:
                 status = COMPLETE_WITH_ERRORS
             info.update({
@@ -189,6 +190,21 @@ class TestRunner:
         finally:
             stop_run_logging(handlers)
         return RunResult(run_id, run_dir, seed, status, abort_reason, summary)
+
+    def _save_plots(self, run_dir: Path, summary: RunSummary) -> None:
+        """Charts are a convenience: a missing library or a drawing problem never fails the run."""
+        if not self.config.run.save_plots:
+            return
+        from ate.data.plots import plots_available, write_plots
+
+        if not plots_available():
+            log.info("Charts skipped: matplotlib is not installed (pip install \".[plots]\")")
+            return
+        try:
+            files = write_plots(run_dir, load_raw_rows(run_dir / RAW_FILE), summary, self.config)
+            log.info("Charts saved: %s", ", ".join(f.name for f in files))
+        except Exception as exc:  # noqa: BLE001
+            log.warning("Charts could not be drawn (%r); the results themselves are unaffected", exc)
 
     # ================================================================= pre-flight
 

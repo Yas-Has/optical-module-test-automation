@@ -299,7 +299,8 @@ xscape-test-automation/
 │       ├── models.py             # Measurement, Status
 │       ├── recorder.py           # streaming raw CSV writer
 │       ├── analysis.py           # statistics + pass/fail
-│       └── report.py             # summary CSV, run_info.json, terminal table, reprocess
+│       ├── report.py             # summary CSV, run_info.json, terminal table, reprocess
+│       └── plots.py              # charts per run (optional, needs matplotlib)
 ├── tests/                        # mirrors src/ate/: each part tested where it lives
 │   ├── helpers.py                # shared helpers: build a config, run, read results, fake instrument
 │   ├── conftest.py               # shared pytest fixtures (free network ports)
@@ -777,7 +778,10 @@ results/20261123-143005_SN-0001_a3f9/
 ├── run_info.json           # run ID, serial, seed, timings, instrument IDs, status, overall result
 ├── config_used.yaml        # exact configuration of this run
 ├── run.log                 # human-readable log
-└── bench.log               # simulator bench output (network mode only)
+├── bench.log               # simulator bench output (network mode only)
+├── power_40C.png           # charts, one set per condition (if matplotlib is installed)
+├── temperature_40C.png
+└── status_40C.png
 ```
 
 The run ID is the folder name: timestamp, serial number and a short random suffix, so it's unique even for two runs in the same second.
@@ -802,6 +806,17 @@ Per channel, per temperature condition, using **valid readings only**:
 If a channel has no valid readings, its statistics are blank and it fails.
 
 `ate reprocess results/<run>` re-runs the analysis on saved data, e.g. with different limits, without re-testing.
+
+### 10.5 Charts
+Three charts per condition, drawn from the raw CSV and the summary (`data/plots.py`), so `ate plot` can draw them for any saved run:
+
+| Chart | Question it answers |
+|---|---|
+| **Power**: box and whisker per channel, limit lines, a diamond for the official average | Did each channel pass, and how steady was it? The diamond is the mW average used for pass/fail, which is not quite the box's median. Invalid readings are left out of the boxes (a 45 dBm reading would flatten the scale) and counted under each channel instead. |
+| **Temperature**: TEC reading over time, target band shaded, settling attempts marked, measurement period shaded | Did the TEC really settle, rather than pass through the band on the way up (§8)? |
+| **Status grid**: channel × reading, coloured by outcome | Where did problems happen? A whole column shows a whole message re-asked; a single square shows one channel re-read alone (§9). |
+
+matplotlib is an optional install. Charts are drawn after the summary is saved, and any problem drawing them is logged and ignored, so they can never cost a run its data.
 
 ### 10.4 Pass/fail rules
 - **Channel passes** if: all 50 readings' final attempts are `VALID` **and** average power is within −3 to +3 dBm.
@@ -877,7 +892,7 @@ Run ID, serial number, seed, start and end times, status (`RUNNING` / `COMPLETE`
 
 ## 13. Testing approach
 
-Full detail and results are in [TESTING.md](TESTING.md). In summary: 193 automated tests, about 8 seconds.
+Full detail and results are in [TESTING.md](TESTING.md). In summary: 201 automated tests, about 11 seconds.
 
 ### 13.1 The test layout mirrors the code
 Each part is tested on its own, next to where it lives. Only `tests/system/` tests the whole program together. A new instrument gets its own `tests/instruments/<name>/` folder.
@@ -888,7 +903,7 @@ Each part is tested on its own, next to where it lives. Only `tests/system/` tes
 | `tests/instruments/tec/`, `opm/` | each instrument folder | driver commands and reply handling; simulator against its physics model |
 | `tests/simulation/` | `simulation/` | device link; fault injection; clock and seeds; shared simulator behaviour; bench control commands and ports |
 | `tests/sequence/` | `sequence/` | stability rule; retry policy |
-| `tests/data/` | `data/` | dBm/mW math, statistics, inclusive limits; live recording; reports; re-processing |
+| `tests/data/` | `data/` | dBm/mW math, statistics, inclusive limits; live recording; reports; re-processing; charts |
 | `tests/config/` | `config.py` | every rule in §7.2 |
 | `tests/system/` | everything | full runs; failure scenarios; network mode; CLI; statistical check |
 
@@ -1056,4 +1071,5 @@ AI assistance (Claude, by Anthropic) was used to discuss and refine the design, 
 | **Roles** (`core/roles.py`): `TemperatureController`, `PowerMeter` | The sequence used to look for the specific TEC/OPM driver classes. It now asks for any instrument filling a role, which makes "a different brand of meter" a one-folder change. |
 | Simulator base class in `simulation/simulator.py`, not `core/` | It depends on the simulated clock and fault injector. Putting it in `core/` would make the shared machinery depend on the simulation. |
 | **Tests reorganised to mirror the code** (`tests/core/`, `tests/instruments/tec/`, …, `tests/system/`); 107 → 192 tests | Each part is tested where it lives; only `tests/system/` tests the whole program. Added tests for the registry, roles, PyVISA over a real socket, the bench's control commands and the simulator base. |
+| Charts per run (`data/plots.py`, `ate plot`, `run.save_plots`) | Added after the core system was done: box and whisker of power per channel, temperature over time, and a status grid. Optional dependency, never able to fail a run (§10.5). |
 | Run folder names: a clash now draws a new name instead of crashing | Two runs of the same serial in the same second could draw the same 4-character code. The folder was (correctly) never reused, but the run crashed. Found by testing a fresh clone (TESTING.md §8). |
