@@ -1,0 +1,20 @@
+# A badly behaved power meter: lots of lost, damaged and impossible replies.
+# Shows the error handling at work: retries, single-channel re-reads, INVALID readings kept.
+extends: ../default.yaml
+
+run:
+  device_serial: "SN-FLAKY"
+
+instruments:
+  - name: tec_main
+    type: sim_tec
+  - name: opm_a
+    type: sim_opm_8ch
+    device_channels: [1, 2, 3, 4, 5, 6, 7, 8]
+    timeout_ms: 300
+    simulation:
+      faults:
+        timeout_rate: 0.05
+        garbled_rate: 0.05
+        channel_garbled_rate: 0.03
+        channel_invalid_rate: 0.01

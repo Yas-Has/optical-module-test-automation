@@ -1,0 +1,8 @@
+# A new test condition is configuration only: test at 25 °C, then at 40 °C.
+# With the device link, channels read about +1.5 dB brighter at 25 °C (-0.1 dB/°C x -15 °C).
+extends: ../default.yaml
+
+sequence:
+  conditions:
+    - setpoint_c: 25.0
+    - setpoint_c: 40.0

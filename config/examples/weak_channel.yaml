@@ -1,0 +1,10 @@
+# Channel 5 is 4 dB dim (well under half the expected power).
+# Every reading is VALID, but the channel FAILS on average power: real data, out of spec.
+extends: ../default.yaml
+
+run:
+  device_serial: "SN-WEAK5"
+
+simulation:
+  device:
+    channel_offsets_db: [0.10, -0.25, 0.05, -0.40, -4.00, -0.10, 0.20, -0.05]

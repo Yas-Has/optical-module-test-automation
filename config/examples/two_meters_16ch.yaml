@@ -1,0 +1,22 @@
+# A 16-channel module read by two 8-input meters.
+# Adding an instrument of an existing type is configuration only.
+extends: ../default.yaml
+
+run:
+  device_serial: "SN-16CH"
+
+simulation:
+  device:
+    channels: 16
+    channel_offsets_db: [0.10, -0.25, 0.05, -0.40, 0.15, -0.10, 0.20, -0.05,
+                         -0.15, 0.30, 0.00, -0.20, 0.25, -0.35, 0.10, 0.05]
+
+instruments:
+  - name: tec_main
+    type: sim_tec
+  - name: opm_a
+    type: sim_opm_8ch
+    device_channels: [1, 2, 3, 4, 5, 6, 7, 8]
+  - name: opm_b
+    type: sim_opm_8ch
+    device_channels: [9, 10, 11, 12, 13, 14, 15, 16]

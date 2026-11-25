@@ -1,0 +1,79 @@
+# Default test configuration: the values given in the technical assessment brief.
+# Every number the system uses is here. Run `ate validate` after editing to check it.
+
+run:
+  device_serial: "SN-0001"
+  results_dir: results
+  seed: null                      # null = pick one; the seed used is always saved with the results
+
+simulation:
+  enabled: true                   # false = talk to real instruments at the addresses below
+  mode: network                   # network: simulators run as a separate program on local ports
+                                  # in_process: simulators run inside the test program (fast tests)
+  time_scale: 0.0                 # 1.0 = real time, 0.1 = 10x faster, 0 = instant (data is identical)
+  host: 127.0.0.1
+  control_port: 5100              # simulator-only port: simulated clock + forcing faults in tests
+  first_instrument_port: 5101     # "auto" addresses are assigned upward from here
+
+  device:                         # the virtual device under test (shared by all instruments)
+    channels: 8
+    nominal_power_dbm: 0.0
+    channel_offsets_db: [0.10, -0.25, 0.05, -0.40, 0.15, -0.10, 0.20, -0.05]
+    temp_coefficient_db_per_c: -0.1   # lasers dim as they heat up
+    reference_temp_c: 40.0            # temperature at which channels sit at nominal + offset
+    noise_db_at_100ms: 0.05           # reading noise at 100 ms averaging (shrinks with longer averaging)
+    ambient_temp_c: 25.0              # room temperature, where the device starts
+
+instruments:                      # a list: add as many of each type as needed
+  - name: tec_main
+    type: sim_tec
+    address: auto                 # simulation: port assigned automatically
+                                  # real hardware: e.g. "TCPIP::192.168.1.20::5025::SOCKET"
+    timeout_ms: 1000
+    max_comm_retries: 1           # retry timeouts / garbled replies once
+    retry_delay_ms: 100
+    range_c: [-10, 100]           # outside this = physically impossible reading (INVALID)
+    simulation:
+      time_constant_s: 8.0        # how quickly the temperature approaches the setpoint
+      jitter_c: 0.02              # reading wobble once settled
+      steady_state_error_c: 0.0   # >0.5 simulates a controller that never reaches the setpoint
+      faults: { timeout_rate: 0.005, garbled_rate: 0.005, invalid_rate: 0.001 }
+
+  - name: opm_a
+    type: sim_opm_8ch
+    address: auto
+    device_channels: [1, 2, 3, 4, 5, 6, 7, 8]   # meter input n is wired to this device channel
+    timeout_ms: 1000
+    max_comm_retries: 1
+    retry_delay_ms: 100
+    range_dbm: [-60, 10]          # outside this = physically impossible reading (INVALID)
+    simulation:
+      faults:
+        timeout_rate: 0.005         # whole reply never arrives
+        garbled_rate: 0.005         # whole reply unreadable
+        channel_garbled_rate: 0.002 # one channel's value damaged (re-read alone)
+        channel_invalid_rate: 0.001 # one channel reports an impossible value (not retried)
+
+sequence:
+  conditions:                     # temperature conditions, run in order
+    - setpoint_c: 40.0
+  temperature:
+    tolerance_c: 0.5
+    poll_interval_s: 1.0
+    stable_for_s: 10              # must stay within tolerance this long to count as verified
+    max_drift_c: 0.1              # ...and change by no more than this across that window (stopped moving)
+    max_wait_s: 120               # per settling attempt
+    max_settle_attempts: 2        # i.e. one retry if it doesn't settle
+    continue_on_fail: true        # still measure the light for troubleshooting (device will FAIL)
+    monitor_during_measurement: true
+  measurement:
+    readings_per_channel: 50
+    read_mode: all                # all = every channel at once (POW:ALL?); per_channel = one at a time
+    averaging_time_ms: 100
+    interval_ms: 100
+
+limits:
+  avg_power_dbm: { min: -3.0, max: 3.0 }
+  require_all_valid: true         # all 50 readings must be valid
+  retry_warning_fraction: 0.05    # warn if a channel needed retries on >5% of its readings
+  temp_drift_warning: true        # warn if the temperature leaves tolerance during measurement

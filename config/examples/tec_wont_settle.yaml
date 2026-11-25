@@ -1,0 +1,16 @@
+# The temperature controller settles 0.8 °C too high, outside the ±0.5 °C tolerance.
+# Expect: two settling attempts, temperature verification FAIL, light still measured
+# (for troubleshooting: power reads ~0.08 dB low because the device is hot), device FAIL.
+extends: ../default.yaml
+
+run:
+  device_serial: "SN-HOT"
+
+instruments:
+  - name: tec_main
+    type: sim_tec
+    simulation:
+      steady_state_error_c: 0.8
+  - name: opm_a
+    type: sim_opm_8ch
+    device_channels: [1, 2, 3, 4, 5, 6, 7, 8]
