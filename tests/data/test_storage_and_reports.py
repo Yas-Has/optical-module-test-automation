@@ -29,6 +29,18 @@ def test_missing_values_are_blank_not_zero(tmp_path):
     assert row["value"] == "" and row["raw_response"] == ""
 
 
+def test_run_folder_name_clash_picks_a_new_name_and_never_reuses_a_folder(tmp_path, monkeypatch):
+    from ate.sequence import runner
+    names = iter(["20261124-120000_SN-1_aaaa", "20261124-120000_SN-1_aaaa", "20261124-120000_SN-1_bbbb"])
+    monkeypatch.setattr(runner, "make_run_id", lambda serial: next(names))
+    first_id, first = runner.create_run_folder(tmp_path, "SN-1")
+    (first / "raw_measurements.csv").write_text("earlier run's data")
+    second_id, second = runner.create_run_folder(tmp_path, "SN-1")  # same name drawn first: must not reuse it
+    assert (first_id, second_id) == ("20261124-120000_SN-1_aaaa", "20261124-120000_SN-1_bbbb")
+    assert (first / "raw_measurements.csv").read_text() == "earlier run's data"
+    assert second.exists() and not any(second.iterdir())
+
+
 def test_summary_and_run_info(tmp_path):
     result = run(build_config(tmp_path, clean=True))
     summary = summary_rows(result)

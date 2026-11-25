@@ -877,7 +877,7 @@ Run ID, serial number, seed, start and end times, status (`RUNNING` / `COMPLETE`
 
 ## 13. Testing approach
 
-Full detail and results are in [TESTING.md](TESTING.md). In summary: 192 automated tests, about 8 seconds.
+Full detail and results are in [TESTING.md](TESTING.md). In summary: 193 automated tests, about 8 seconds.
 
 ### 13.1 The test layout mirrors the code
 Each part is tested on its own, next to where it lives. Only `tests/system/` tests the whole program together. A new instrument gets its own `tests/instruments/<name>/` folder.
@@ -1056,3 +1056,4 @@ AI assistance (Claude, by Anthropic) was used to discuss and refine the design, 
 | **Roles** (`core/roles.py`): `TemperatureController`, `PowerMeter` | The sequence used to look for the specific TEC/OPM driver classes. It now asks for any instrument filling a role, which makes "a different brand of meter" a one-folder change. |
 | Simulator base class in `simulation/simulator.py`, not `core/` | It depends on the simulated clock and fault injector. Putting it in `core/` would make the shared machinery depend on the simulation. |
 | **Tests reorganised to mirror the code** (`tests/core/`, `tests/instruments/tec/`, …, `tests/system/`); 107 → 192 tests | Each part is tested where it lives; only `tests/system/` tests the whole program. Added tests for the registry, roles, PyVISA over a real socket, the bench's control commands and the simulator base. |
+| Run folder names: a clash now draws a new name instead of crashing | Two runs of the same serial in the same second could draw the same 4-character code. The folder was (correctly) never reused, but the run crashed. Found by testing a fresh clone (TESTING.md §8). |

@@ -166,7 +166,7 @@ Details: [docs/DESIGN.md §14](docs/DESIGN.md#14-extensibility).
 
 ## Testing approach (summary)
 
-192 automated tests, running in about 8 seconds (details and results in [docs/TESTING.md](docs/TESTING.md)). **The `tests/` folder mirrors `src/ate/`**: each part is tested next to where it lives, and only `tests/system/` tests the whole program together.
+193 automated tests, running in about 8 seconds (details and results in [docs/TESTING.md](docs/TESTING.md)). **The `tests/` folder mirrors `src/ate/`**: each part is tested next to where it lives, and only `tests/system/` tests the whole program together.
 
 | Tests | Check |
 |---|---|

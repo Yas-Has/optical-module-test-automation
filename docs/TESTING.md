@@ -3,11 +3,11 @@
 How the system was verified, including error scenarios. All checks are automated and run with:
 
 ```bash
-pytest                         # 192 tests, about 8 seconds
+pytest                         # 193 tests, about 8 seconds
 pytest tests/instruments/tec   # or just one part
 ```
 
-**Result at time of writing: 192 passed, 0 failed** (Python 3.13.1, macOS).
+**Result at time of writing: 193 passed, 0 failed, on 12 consecutive full runs** (Python 3.13.1, macOS).
 
 ---
 
@@ -181,10 +181,11 @@ After the restructure into one folder per instrument, seed 42 was run again over
 
 ## 8. Issues found by testing
 
-Testing found and fixed two real problems during development:
+Testing found and fixed three real problems during development:
 
 1. **Temperature "verified" while still rising.** The original stability rule only required readings to stay within ±0.5 °C for 10 s. A controller heading towards 40.8 °C spends about 11 s inside 39.5–40.5 °C on the way up, so the faulty TEC wrongly passed. The fix adds a drift limit: across the window, readings must not change by more than `max_drift_c` (0.1 °C). The temperature must have **stopped moving**, not just be passing through. A side benefit: the verified temperature on a healthy run rose from 39.71 °C to 39.91 °C, because verification now waits for real settling.
 2. **Exactly −3.0 dBm failing.** Converting −3 dBm to milliwatts and back gives −3.0000000000000004 in floating point. Limits are now compared at a fixed resolution of 0.000001 dB, so they're truly inclusive.
+3. **Two runs crashing on the same folder name.** Found by testing a fresh copy of the repository. Each run's folder is named from the time (to the second), the serial number and a 4-character random code (65,536 possibilities). The statistical check starts about 70 runs per second, so occasionally two drew the same code. The program correctly refused to reuse the folder, but then crashed (`FileExistsError`, about 1 full test run in 8). Now it draws a new code and tries again; existing folders are still never reused or overwritten. A test forces a name clash on purpose, and the full suite then passed 12 times in a row.
 
 ## 9. Known limitations
 

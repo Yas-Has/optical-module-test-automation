@@ -76,6 +76,21 @@ def make_run_id(serial: str) -> str:
     return f"{datetime.now():%Y%m%d-%H%M%S}_{safe_serial}_{secrets.token_hex(2)}"
 
 
+def create_run_folder(results_dir: Path, serial: str, attempts: int = 100) -> tuple[str, Path]:
+    """Create a new, empty folder for this run. An existing folder is never reused or overwritten:
+    if two runs of the same serial start in the same second and happen to draw the same random
+    suffix, the second simply draws a new one."""
+    for _ in range(attempts):
+        run_id = make_run_id(serial)
+        run_dir = results_dir / run_id
+        try:
+            run_dir.mkdir(parents=True, exist_ok=False)
+        except FileExistsError:
+            continue
+        return run_id, run_dir
+    raise RuntimeError(f"could not create a unique results folder in {results_dir}")
+
+
 class TestRunner:
     __test__ = False  # not a pytest test class
 
@@ -99,9 +114,7 @@ class TestRunner:
         config = self.config.model_copy(update={"run": self.config.run.model_copy(update={"seed": seed})})
         self.config = config
         serial = config.run.device_serial
-        run_id = make_run_id(serial)
-        run_dir = Path(config.run.results_dir) / run_id
-        run_dir.mkdir(parents=True, exist_ok=False)  # never overwrite an earlier run
+        run_id, run_dir = create_run_folder(Path(config.run.results_dir), serial)
         config_path = run_dir / CONFIG_FILE
         save_config(config, config_path)
 
