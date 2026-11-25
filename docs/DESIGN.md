@@ -895,7 +895,7 @@ Run ID, serial number, seed, start and end times, status (`RUNNING` / `COMPLETE`
 
 ## 13. Testing approach
 
-Full detail and results are in [TESTING.md](TESTING.md). In summary: 208 automated tests, about 10 seconds.
+Full detail and results are in [TESTING.md](TESTING.md). In summary: 223 automated tests, about 10 seconds.
 
 ### 13.1 The test layout mirrors the code
 Each part is tested on its own, next to where it lives. Only `tests/system/` tests the whole program together. A new instrument gets its own `tests/instruments/<name>/` folder.
@@ -908,7 +908,7 @@ Each part is tested on its own, next to where it lives. Only `tests/system/` tes
 | `tests/sequence/` | `sequence/` | stability rule; retry policy |
 | `tests/data/` | `data/` | dBm/mW math, statistics, inclusive limits; live recording; reports; re-processing; charts |
 | `tests/config/` | `config.py` | every rule in §7.2 |
-| `tests/system/` | everything | full runs; failure scenarios; network mode; CLI; statistical check |
+| `tests/system/` | everything | full runs; runs with changed settings; failure scenarios; network mode; CLI; statistical check |
 
 ### 13.2 Techniques
 - **Forced faults.** Random faults are switched off, and one specific fault is injected through the bench (directly in-process, or via the control port over the network). Every error path is tested on purpose, not by luck.

@@ -3,11 +3,11 @@
 How the system was verified, including error scenarios. All checks are automated and run with:
 
 ```bash
-pytest                         # 208 tests, about 10 seconds
+pytest                         # 223 tests, about 10 seconds
 pytest tests/instruments/tec   # or just one part
 ```
 
-**Result at time of writing: 208 passed, 0 failed** (Python 3.13.1, macOS). Before the charts were added, the 193 tests then in the suite passed on 12 consecutive full runs (see §8, issue 3).
+**Result at time of writing: 223 passed, 0 failed** (Python 3.13.1, macOS). Before the charts were added, the 193 tests then in the suite passed on 12 consecutive full runs (see §8, issue 3).
 
 ---
 
@@ -132,6 +132,27 @@ Charts are left out of every other test (`save_plots: false` in the test helper)
 - Raw rows reach the file **while the run is still going** (read back before the recorder closes); missing values are blank, never zero
 - `run_info.json` records the status, seed, result, and each instrument's name and identity
 - **Command line:** exit code 0 for a passing device, 1 for a failing one, 2 for a bad config (which prints the reason and creates no results folder) or a missing run folder for `reprocess`; `ate validate` lists the instruments
+
+### 4.1 Runs with changed settings
+
+`tests/system/test_modified_settings.py`. Each test changes settings the way a user would in the YAML, does a whole run, and checks that the measurements, the summary **and the charts** follow, with no code change. Charts are checked by catching each one as it's saved and reading what was drawn: where the limit lines are, where the temperature band is, and how many squares the status grid has.
+
+| Setting changed | What must follow |
+|---|---|
+| Power limits tightened to ±0.3 dBm | Only channel 4 (−0.40 dB) fails, for `avg_below_min`; the chart's limit lines move to ±0.3 |
+| `max_bad_readings: 5` on the flaky meter | The verdict flips from FAIL to PASS while the raw data stays **identical**: a limit changes the judgement, never the measurements |
+| `require_all_valid: false` | Any number of bad readings is accepted; no fail reasons |
+| `readings_per_channel: 20` | 160 measurement rows, 20 valid per channel, a 20-column status grid |
+| `averaging_time_ms` 100 → 400 | The spread of the readings halves (noise shrinks with the square root of the averaging time) |
+| `noise_db_at_100ms` ×10 | Over 5× the spread, same averages |
+| Setpoint 30 °C, tolerance ±0.2 | Verified at about 30 °C; every channel about 1 dB brighter (the device link); the chart band is 29.8–30.2 and the charts are named `_30C` |
+| `temp_coefficient_db_per_c: 0` | 25 °C and 40 °C give the same power (no device link) |
+| `max_drift_c` stricter than the TEC's own wobble | Temperature verification fails after both attempts; light is still measured |
+| `max_settle_attempts: 4` on a TEC that won't settle | Four settling attempts are made and recorded |
+| `max_comm_retries` 0 / 1 / 3 on the flaky meter | No retries means no second attempts in the raw file; more retries recover more readings |
+| A 4-channel device | 4 summary rows, 4 boxes on the power chart, a 4-row status grid |
+| Nominal power −5 dBm | Every channel fails below the limit |
+| All fault rates set to 0 | Every reading valid on the first attempt |
 
 ---
 

@@ -172,7 +172,7 @@ Details: [docs/DESIGN.md §14](docs/DESIGN.md#14-extensibility).
 
 ## Testing approach (summary)
 
-208 automated tests, running in about 10 seconds (details and results in [docs/TESTING.md](docs/TESTING.md)). **The `tests/` folder mirrors `src/ate/`**: each part is tested next to where it lives, and only `tests/system/` tests the whole program together.
+223 automated tests, running in about 10 seconds (details and results in [docs/TESTING.md](docs/TESTING.md)). **The `tests/` folder mirrors `src/ate/`**: each part is tested next to where it lives, and only `tests/system/` tests the whole program together.
 
 | Tests | Check |
 |---|---|
@@ -182,7 +182,7 @@ Details: [docs/DESIGN.md §14](docs/DESIGN.md#14-extensibility).
 | `tests/sequence/` | The stability rule, the retry policy (each fault forced on purpose) |
 | `tests/data/` | dBm/mW math, statistics, inclusive limits, live recording, reports, re-processing, charts |
 | `tests/config/` | Every validation rule |
-| `tests/system/` | Full runs, failure scenarios (meter/TEC lost, Ctrl+C), network mode, CLI, and 200 seeded runs giving a 63% pass rate against the predicted 66% |
+| `tests/system/` | Full runs, runs with changed settings (results and charts follow the YAML), failure scenarios (meter/TEC lost, Ctrl+C), network mode, CLI, and 200 seeded runs giving a 63% pass rate against the predicted 66% |
 
 ---
 
