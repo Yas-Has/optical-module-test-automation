@@ -1,0 +1,9 @@
+run_id,device_serial,condition,setpoint_c,temp_verification,temp_settle_attempts,temp_mean_c,temp_min_during_meas_c,temp_max_during_meas_c,channel,instrument,instrument_input,readings_expected,valid_count,invalid_count,timeout_count,garbled_count,not_measured_count,retries_used,avg_dbm,min_dbm,max_dbm,std_db,averaging_time_ms,interval_ms,channel_result,fail_reasons,warnings,overall_result
+20261123-182602_SN-HOT_f4b5,SN-HOT,40C,40,FAIL,2,,40.752,40.856,1,opm_a,1,50,50,0,0,0,0,0,0.0230,-0.0650,0.1570,0.0489,100,100,PASS,,temp_drift_during_measurement,FAIL
+20261123-182602_SN-HOT_f4b5,SN-HOT,40C,40,FAIL,2,,40.752,40.856,2,opm_a,2,50,50,0,0,0,0,1,-0.3374,-0.4350,-0.2460,0.0416,100,100,PASS,,temp_drift_during_measurement,FAIL
+20261123-182602_SN-HOT_f4b5,SN-HOT,40C,40,FAIL,2,,40.752,40.856,3,opm_a,3,50,50,0,0,0,0,0,-0.0313,-0.1740,0.0350,0.0442,100,100,PASS,,temp_drift_during_measurement,FAIL
+20261123-182602_SN-HOT_f4b5,SN-HOT,40C,40,FAIL,2,,40.752,40.856,4,opm_a,4,50,50,0,0,0,0,1,-0.4830,-0.5890,-0.3730,0.0551,100,100,PASS,,temp_drift_during_measurement,FAIL
+20261123-182602_SN-HOT_f4b5,SN-HOT,40C,40,FAIL,2,,40.752,40.856,5,opm_a,5,50,50,0,0,0,0,0,0.0671,-0.0630,0.1800,0.0518,100,100,PASS,,temp_drift_during_measurement,FAIL
+20261123-182602_SN-HOT_f4b5,SN-HOT,40C,40,FAIL,2,,40.752,40.856,6,opm_a,6,50,50,0,0,0,0,0,-0.1865,-0.2790,-0.0710,0.0474,100,100,PASS,,temp_drift_during_measurement,FAIL
+20261123-182602_SN-HOT_f4b5,SN-HOT,40C,40,FAIL,2,,40.752,40.856,7,opm_a,7,50,50,0,0,0,0,0,0.1134,0.0490,0.1850,0.0352,100,100,PASS,,temp_drift_during_measurement,FAIL
+20261123-182602_SN-HOT_f4b5,SN-HOT,40C,40,FAIL,2,,40.752,40.856,8,opm_a,8,50,50,0,0,0,0,0,-0.1221,-0.2180,0.0040,0.0525,100,100,PASS,,temp_drift_during_measurement,FAIL

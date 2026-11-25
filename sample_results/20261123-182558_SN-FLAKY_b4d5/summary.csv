@@ -1,0 +1,9 @@
+run_id,device_serial,condition,setpoint_c,temp_verification,temp_settle_attempts,temp_mean_c,temp_min_during_meas_c,temp_max_during_meas_c,channel,instrument,instrument_input,readings_expected,valid_count,invalid_count,timeout_count,garbled_count,not_measured_count,retries_used,avg_dbm,min_dbm,max_dbm,std_db,averaging_time_ms,interval_ms,channel_result,fail_reasons,warnings,overall_result
+20261123-182558_SN-FLAKY_b4d5,SN-FLAKY,40C,40,PASS,1,39.914,39.931,40.025,1,opm_a,1,50,49,1,0,0,0,8,0.0996,-0.0140,0.2390,0.0493,100,100,FAIL,invalid_readings(1/50),high_retry_rate(8),FAIL
+20261123-182558_SN-FLAKY_b4d5,SN-FLAKY,40C,40,PASS,1,39.914,39.931,40.025,2,opm_a,2,50,48,1,0,1,0,8,-0.2516,-0.3520,-0.1640,0.0429,100,100,FAIL,invalid_readings(2/50),high_retry_rate(8),FAIL
+20261123-182558_SN-FLAKY_b4d5,SN-FLAKY,40C,40,PASS,1,39.914,39.931,40.025,3,opm_a,3,50,49,1,0,0,0,8,0.0530,-0.0920,0.1120,0.0408,100,100,FAIL,invalid_readings(1/50),high_retry_rate(8),FAIL
+20261123-182558_SN-FLAKY_b4d5,SN-FLAKY,40C,40,PASS,1,39.914,39.931,40.025,4,opm_a,4,50,50,0,0,0,0,8,-0.4042,-0.5070,-0.2890,0.0515,100,100,PASS,,high_retry_rate(8),FAIL
+20261123-182558_SN-FLAKY_b4d5,SN-FLAKY,40C,40,PASS,1,39.914,39.931,40.025,5,opm_a,5,50,49,1,0,0,0,7,0.1544,0.0190,0.2630,0.0534,100,100,FAIL,invalid_readings(1/50),high_retry_rate(7),FAIL
+20261123-182558_SN-FLAKY_b4d5,SN-FLAKY,40C,40,PASS,1,39.914,39.931,40.025,6,opm_a,6,50,50,0,0,0,0,7,-0.0996,-0.1960,0.0120,0.0508,100,100,PASS,,high_retry_rate(7),FAIL
+20261123-182558_SN-FLAKY_b4d5,SN-FLAKY,40C,40,PASS,1,39.914,39.931,40.025,7,opm_a,7,50,49,1,0,0,0,8,0.1977,0.1010,0.3070,0.0401,100,100,FAIL,invalid_readings(1/50),high_retry_rate(8),FAIL
+20261123-182558_SN-FLAKY_b4d5,SN-FLAKY,40C,40,PASS,1,39.914,39.931,40.025,8,opm_a,8,50,50,0,0,0,0,8,-0.0405,-0.1330,0.0850,0.0473,100,100,PASS,,high_retry_rate(8),FAIL

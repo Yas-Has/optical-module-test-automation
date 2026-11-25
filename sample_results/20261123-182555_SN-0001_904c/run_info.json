@@ -1,0 +1,46 @@
+{
+  "run_id": "20261123-182555_SN-0001_904c",
+  "device_serial": "SN-0001",
+  "seed": 2,
+  "status": "COMPLETE",
+  "started_utc": "2026-11-24T02:25:55.287Z",
+  "mode": "simulated (network, time_scale 0)",
+  "software_version": "0.1.0",
+  "python_version": "3.13.1",
+  "instruments": [
+    {
+      "name": "tec_main",
+      "type": "sim_tec",
+      "role": "temperature_control",
+      "address": "TCPIP::127.0.0.1::5101::SOCKET",
+      "identity": "XSIM,TEC-1000,tec_main,1.0"
+    },
+    {
+      "name": "opm_a",
+      "type": "sim_opm_8ch",
+      "role": "power_meter",
+      "address": "TCPIP::127.0.0.1::5102::SOCKET",
+      "identity": "XSIM,OPM-8,opm_a,1.0"
+    }
+  ],
+  "abort_reason": null,
+  "unreachable_instruments": {},
+  "finished_utc": "2026-11-24T02:25:55.805Z",
+  "overall_result": "PASS",
+  "temperature": [
+    {
+      "condition": "40C",
+      "setpoint_c": 40.0,
+      "result": "PASS",
+      "tecs": [
+        {
+          "tec": "tec_main",
+          "result": "PASS",
+          "settle_attempts": 1,
+          "mean_c": 39.91436363636364
+        }
+      ]
+    }
+  ],
+  "raw_rows": 501
+}

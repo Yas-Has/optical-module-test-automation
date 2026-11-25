@@ -1,0 +1,48 @@
+2026-11-23 18:25:58,129 INFO    ate.runner: Run 20261123-182558_SN-FLAKY_b4d5 | device SN-FLAKY | seed 2 | simulated (network, time_scale 0)
+2026-11-23 18:25:58,129 INFO    ate.runner: Results folder: sample_results/20261123-182558_SN-FLAKY_b4d5
+2026-11-23 18:25:58,243 INFO    ate.bench: simulator bench started (pid 68703)
+2026-11-23 18:25:58,262 INFO    ate.instruments: tec_main connected: XSIM,TEC-1000,tec_main,1.0
+2026-11-23 18:25:58,263 INFO    ate.instruments: opm_a connected: XSIM,OPM-8,opm_a,1.0
+2026-11-23 18:25:58,263 INFO    ate.runner: === Condition 40C: setpoint 40.00 C ===
+2026-11-23 18:25:58,274 INFO    ate.runner: tec_main: temperature verified, 39.914 C (stable for 10 s; settle attempt 1, 47 s)
+2026-11-23 18:25:58,274 INFO    ate.runner: Measuring 50 readings x 8 channels (all mode, 100 ms averaging)
+2026-11-23 18:25:58,275 INFO    ate.runner: opm_a: whole reply GARBLED on reading 2, retrying all channels
+2026-11-23 18:25:58,381 INFO    ate.runner: opm_a: channel 1 GARBLED on reading 3, re-reading that channel only
+2026-11-23 18:25:58,487 INFO    ate.runner: opm_a: channel 8 GARBLED on reading 3, re-reading that channel only
+2026-11-23 18:25:58,591 INFO    ate.runner: opm_a: channel 7 GARBLED on reading 5, re-reading that channel only
+2026-11-23 18:25:58,695 INFO    ate.runner: opm_a: channel 7 GARBLED on reading 8, re-reading that channel only
+2026-11-23 18:25:58,802 INFO    ate.runner: opm_a: channel 6 GARBLED on reading 10, re-reading that channel only
+2026-11-23 18:25:58,908 INFO    ate.runner: opm_a: channel 1 GARBLED on reading 11, re-reading that channel only
+2026-11-23 18:25:59,015 INFO    ate.runner: tec_main: GARBLED on monitor reading 13, retrying
+2026-11-23 18:25:59,427 INFO    ate.runner: opm_a: whole reply TIMEOUT on reading 14, retrying all channels
+2026-11-23 18:25:59,840 INFO    ate.runner: opm_a: whole reply TIMEOUT on reading 15, retrying all channels
+2026-11-23 18:25:59,947 INFO    ate.runner: opm_a: channel 8 GARBLED on reading 18, re-reading that channel only
+2026-11-23 18:26:00,058 INFO    ate.runner: opm_a: channel 5 GARBLED on reading 22, re-reading that channel only
+2026-11-23 18:26:00,168 INFO    ate.runner: opm_a: channel 4 GARBLED on reading 24, re-reading that channel only
+2026-11-23 18:26:00,276 INFO    ate.runner: opm_a: channel 3 GARBLED on reading 25, re-reading that channel only
+2026-11-23 18:26:00,385 INFO    ate.runner: opm_a: channel 3 GARBLED on reading 29, re-reading that channel only
+2026-11-23 18:26:00,801 INFO    ate.runner: opm_a: whole reply TIMEOUT on reading 31, retrying all channels
+2026-11-23 18:26:00,911 INFO    ate.runner: opm_a: channel 2 GARBLED on reading 34, re-reading that channel only
+2026-11-23 18:26:01,330 INFO    ate.runner: opm_a: whole reply TIMEOUT on reading 36, retrying all channels
+2026-11-23 18:26:01,437 INFO    ate.runner: opm_a: channel 4 GARBLED on reading 38, re-reading that channel only
+2026-11-23 18:26:01,852 INFO    ate.runner: opm_a: whole reply TIMEOUT on reading 39, retrying all channels
+2026-11-23 18:26:01,960 INFO    ate.runner: opm_a: channel 2 GARBLED on reading 40, re-reading that channel only
+2026-11-23 18:26:02,077 INFO    ate.instruments: opm_a disconnected
+2026-11-23 18:26:02,077 INFO    ate.instruments: tec_main disconnected
+2026-11-23 18:26:02,113 INFO    ate.bench: simulator bench stopped
+2026-11-23 18:26:02,121 INFO    ate.runner: 
+Device SN-FLAKY | run 20261123-182558_SN-FLAKY_b4d5
+
+Condition 40C: temperature PASS [tec_main PASS 39.91 C]
+   Ch  Meter:In    Avg dBm      Min      Max     Std Valid  Inv  T/O Garb  N/M Retry  Result
+    1  opm_a:1       0.100   -0.014    0.239   0.049    49    1    0    0    0     8  FAIL (invalid_readings(1/50))
+    2  opm_a:2      -0.252   -0.352   -0.164   0.043    48    1    0    1    0     8  FAIL (invalid_readings(2/50))
+    3  opm_a:3       0.053   -0.092    0.112   0.041    49    1    0    0    0     8  FAIL (invalid_readings(1/50))
+    4  opm_a:4      -0.404   -0.507   -0.289   0.051    50    0    0    0    0     8  PASS
+    5  opm_a:5       0.154    0.019    0.263   0.053    49    1    0    0    0     7  FAIL (invalid_readings(1/50))
+    6  opm_a:6      -0.100   -0.196    0.012   0.051    50    0    0    0    0     7  PASS
+    7  opm_a:7       0.198    0.101    0.307   0.040    49    1    0    0    0     8  FAIL (invalid_readings(1/50))
+    8  opm_a:8      -0.041   -0.133    0.085   0.047    50    0    0    0    0     8  PASS
+
+OVERALL: FAIL
+2026-11-23 18:26:02,121 INFO    ate.runner: Run status: COMPLETE | results in sample_results/20261123-182558_SN-FLAKY_b4d5

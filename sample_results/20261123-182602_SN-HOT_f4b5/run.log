@@ -1,0 +1,34 @@
+2026-11-23 18:26:02,251 INFO    ate.runner: Run 20261123-182602_SN-HOT_f4b5 | device SN-HOT | seed 2 | simulated (network, time_scale 0)
+2026-11-23 18:26:02,251 INFO    ate.runner: Results folder: sample_results/20261123-182602_SN-HOT_f4b5
+2026-11-23 18:26:02,360 INFO    ate.bench: simulator bench started (pid 68714)
+2026-11-23 18:26:02,379 INFO    ate.instruments: tec_main connected: XSIM,TEC-1000,tec_main,1.0
+2026-11-23 18:26:02,379 INFO    ate.instruments: opm_a connected: XSIM,OPM-8,opm_a,1.0
+2026-11-23 18:26:02,380 INFO    ate.runner: === Condition 40C: setpoint 40.00 C ===
+2026-11-23 18:26:02,394 INFO    ate.runner: tec_main: GARBLED on settle reading 61, retrying
+2026-11-23 18:26:02,517 WARNING ate.runner: tec_main: not stable within 120 s; trying again (settle attempt 2 of 2)
+2026-11-23 18:26:02,529 INFO    ate.runner: tec_main: GARBLED on settle reading 50, retrying
+2026-11-23 18:26:02,658 ERROR   ate.runner: tec_main: temperature verification FAILED after 2 settle attempts
+2026-11-23 18:26:02,658 WARNING ate.runner: Temperature verification FAILED for 40C. Measuring anyway for troubleshooting; the device cannot pass.
+2026-11-23 18:26:02,658 INFO    ate.runner: Measuring 50 readings x 8 channels (all mode, 100 ms averaging)
+2026-11-23 18:26:02,663 INFO    ate.runner: opm_a: channel 4 GARBLED on reading 10, re-reading that channel only
+2026-11-23 18:26:02,785 INFO    ate.runner: opm_a: channel 2 GARBLED on reading 34, re-reading that channel only
+2026-11-23 18:26:02,906 INFO    ate.instruments: opm_a disconnected
+2026-11-23 18:26:02,906 INFO    ate.instruments: tec_main disconnected
+2026-11-23 18:26:02,945 INFO    ate.bench: simulator bench stopped
+2026-11-23 18:26:02,953 INFO    ate.runner: 
+Device SN-HOT | run 20261123-182602_SN-HOT_f4b5
+
+Condition 40C: temperature FAIL [tec_main FAIL (attempt 2)]
+  warnings: temp_drift_during_measurement
+   Ch  Meter:In    Avg dBm      Min      Max     Std Valid  Inv  T/O Garb  N/M Retry  Result
+    1  opm_a:1       0.023   -0.065    0.157   0.049    50    0    0    0    0     0  PASS
+    2  opm_a:2      -0.337   -0.435   -0.246   0.042    50    0    0    0    0     1  PASS
+    3  opm_a:3      -0.031   -0.174    0.035   0.044    50    0    0    0    0     0  PASS
+    4  opm_a:4      -0.483   -0.589   -0.373   0.055    50    0    0    0    0     1  PASS
+    5  opm_a:5       0.067   -0.063    0.180   0.052    50    0    0    0    0     0  PASS
+    6  opm_a:6      -0.187   -0.279   -0.071   0.047    50    0    0    0    0     0  PASS
+    7  opm_a:7       0.113    0.049    0.185   0.035    50    0    0    0    0     0  PASS
+    8  opm_a:8      -0.122   -0.218    0.004   0.052    50    0    0    0    0     0  PASS
+
+OVERALL: FAIL
+2026-11-23 18:26:02,953 INFO    ate.runner: Run status: COMPLETE | results in sample_results/20261123-182602_SN-HOT_f4b5

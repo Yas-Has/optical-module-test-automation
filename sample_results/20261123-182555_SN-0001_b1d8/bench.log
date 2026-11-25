@@ -1,0 +1,4 @@
+simulator bench ready on 127.0.0.1 (seed 42)
+  control port: 5100
+  tec_main: TCPIP::127.0.0.1::5101::SOCKET
+  opm_a: TCPIP::127.0.0.1::5102::SOCKET

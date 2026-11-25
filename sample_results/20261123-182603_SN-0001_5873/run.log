@@ -1,0 +1,46 @@
+2026-11-23 18:26:03,084 INFO    ate.runner: Run 20261123-182603_SN-0001_5873 | device SN-0001 | seed 2 | simulated (network, time_scale 0)
+2026-11-23 18:26:03,084 INFO    ate.runner: Results folder: sample_results/20261123-182603_SN-0001_5873
+2026-11-23 18:26:03,197 INFO    ate.bench: simulator bench started (pid 68718)
+2026-11-23 18:26:03,216 INFO    ate.instruments: tec_main connected: XSIM,TEC-1000,tec_main,1.0
+2026-11-23 18:26:03,216 INFO    ate.instruments: opm_a connected: XSIM,OPM-8,opm_a,1.0
+2026-11-23 18:26:03,217 INFO    ate.runner: === Condition 25C: setpoint 25.00 C ===
+2026-11-23 18:26:03,220 INFO    ate.runner: tec_main: temperature verified, 25.013 C (stable for 10 s; settle attempt 1, 10 s)
+2026-11-23 18:26:03,220 INFO    ate.runner: Measuring 50 readings x 8 channels (all mode, 100 ms averaging)
+2026-11-23 18:26:03,225 INFO    ate.runner: opm_a: channel 4 GARBLED on reading 10, re-reading that channel only
+2026-11-23 18:26:03,345 INFO    ate.runner: opm_a: channel 2 GARBLED on reading 34, re-reading that channel only
+2026-11-23 18:26:03,462 INFO    ate.runner: tec_main: GARBLED on monitor reading 50, retrying
+2026-11-23 18:26:03,568 INFO    ate.runner: === Condition 40C: setpoint 40.00 C ===
+2026-11-23 18:26:03,590 INFO    ate.runner: tec_main: temperature verified, 39.906 C (stable for 10 s; settle attempt 1, 46 s)
+2026-11-23 18:26:03,590 INFO    ate.runner: Measuring 50 readings x 8 channels (all mode, 100 ms averaging)
+2026-11-23 18:26:03,609 INFO    ate.runner: opm_a: channel 4 GARBLED on reading 32, re-reading that channel only
+2026-11-23 18:26:03,720 INFO    ate.runner: opm_a: whole reply GARBLED on reading 45, retrying all channels
+2026-11-23 18:26:03,829 INFO    ate.instruments: opm_a disconnected
+2026-11-23 18:26:03,829 INFO    ate.instruments: tec_main disconnected
+2026-11-23 18:26:03,847 INFO    ate.bench: simulator bench stopped
+2026-11-23 18:26:03,859 INFO    ate.runner: 
+Device SN-0001 | run 20261123-182603_SN-0001_5873
+
+Condition 25C: temperature PASS [tec_main PASS 25.01 C]
+   Ch  Meter:In    Avg dBm      Min      Max     Std Valid  Inv  T/O Garb  N/M Retry  Result
+    1  opm_a:1       1.603    1.515    1.737   0.049    50    0    0    0    0     0  PASS
+    2  opm_a:2       1.243    1.145    1.334   0.042    50    0    0    0    0     1  PASS
+    3  opm_a:3       1.549    1.406    1.615   0.044    50    0    0    0    0     0  PASS
+    4  opm_a:4       1.097    0.991    1.207   0.055    50    0    0    0    0     1  PASS
+    5  opm_a:5       1.647    1.517    1.760   0.052    50    0    0    0    0     0  PASS
+    6  opm_a:6       1.393    1.301    1.509   0.047    50    0    0    0    0     0  PASS
+    7  opm_a:7       1.693    1.629    1.765   0.035    50    0    0    0    0     0  PASS
+    8  opm_a:8       1.458    1.362    1.584   0.052    50    0    0    0    0     0  PASS
+
+Condition 40C: temperature PASS [tec_main PASS 39.91 C]
+   Ch  Meter:In    Avg dBm      Min      Max     Std Valid  Inv  T/O Garb  N/M Retry  Result
+    1  opm_a:1       0.102   -0.010    0.202   0.053    50    0    0    0    0     1  PASS
+    2  opm_a:2      -0.235   -0.368   -0.103   0.052    50    0    0    0    0     1  PASS
+    3  opm_a:3       0.051   -0.050    0.157   0.048    50    0    0    0    0     1  PASS
+    4  opm_a:4      -0.397   -0.539   -0.300   0.049    50    0    0    0    0     2  PASS
+    5  opm_a:5       0.155    0.041    0.323   0.058    50    0    0    0    0     1  PASS
+    6  opm_a:6      -0.097   -0.234    0.003   0.056    50    0    0    0    0     1  PASS
+    7  opm_a:7       0.210    0.104    0.364   0.052    50    0    0    0    0     1  PASS
+    8  opm_a:8      -0.040   -0.137    0.033   0.040    50    0    0    0    0     1  PASS
+
+OVERALL: PASS
+2026-11-23 18:26:03,859 INFO    ate.runner: Run status: COMPLETE | results in sample_results/20261123-182603_SN-0001_5873

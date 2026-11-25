@@ -1,0 +1,98 @@
+run:
+  device_serial: SN-FLAKY
+  results_dir: sample_results
+  seed: 2
+simulation:
+  enabled: true
+  mode: network
+  time_scale: 0.0
+  host: 127.0.0.1
+  control_port: 5100
+  first_instrument_port: 5101
+  device:
+    channels: 8
+    nominal_power_dbm: 0.0
+    channel_offsets_db:
+    - 0.1
+    - -0.25
+    - 0.05
+    - -0.4
+    - 0.15
+    - -0.1
+    - 0.2
+    - -0.05
+    temp_coefficient_db_per_c: -0.1
+    reference_temp_c: 40.0
+    noise_db_at_100ms: 0.05
+    ambient_temp_c: 25.0
+instruments:
+- name: tec_main
+  type: sim_tec
+  address: auto
+  timeout_ms: 1000
+  max_comm_retries: 1
+  retry_delay_ms: 100
+  range_c:
+  - -10.0
+  - 100.0
+  simulation:
+    time_constant_s: 8.0
+    jitter_c: 0.02
+    steady_state_error_c: 0.0
+    faults:
+      timeout_rate: 0.005
+      garbled_rate: 0.005
+      invalid_rate: 0.001
+      channel_garbled_rate: 0.0
+      channel_invalid_rate: 0.0
+- name: opm_a
+  type: sim_opm_8ch
+  address: auto
+  timeout_ms: 300
+  max_comm_retries: 1
+  retry_delay_ms: 100
+  device_channels:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  range_dbm:
+  - -60.0
+  - 10.0
+  simulation:
+    faults:
+      timeout_rate: 0.05
+      garbled_rate: 0.05
+      invalid_rate: 0.0
+      channel_garbled_rate: 0.03
+      channel_invalid_rate: 0.01
+sequence:
+  conditions:
+  - setpoint_c: 40.0
+    name: null
+    tecs: null
+  temperature:
+    tolerance_c: 0.5
+    poll_interval_s: 1.0
+    stable_for_s: 10.0
+    max_drift_c: 0.1
+    max_wait_s: 120.0
+    max_settle_attempts: 2
+    continue_on_fail: true
+    monitor_during_measurement: true
+  measurement:
+    readings_per_channel: 50
+    read_mode: all
+    averaging_time_ms: 100.0
+    interval_ms: 100.0
+limits:
+  avg_power_dbm:
+    min: -3.0
+    max: 3.0
+  require_all_valid: true
+  retry_warning_fraction: 0.05
+  temp_drift_warning: true

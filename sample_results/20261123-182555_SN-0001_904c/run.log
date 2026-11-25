@@ -1,0 +1,30 @@
+2026-11-23 18:25:55,288 INFO    ate.runner: Run 20261123-182555_SN-0001_904c | device SN-0001 | seed 2 | simulated (network, time_scale 0)
+2026-11-23 18:25:55,288 INFO    ate.runner: Results folder: sample_results/20261123-182555_SN-0001_904c
+2026-11-23 18:25:55,399 INFO    ate.bench: simulator bench started (pid 68689)
+2026-11-23 18:25:55,419 INFO    ate.instruments: tec_main connected: XSIM,TEC-1000,tec_main,1.0
+2026-11-23 18:25:55,420 INFO    ate.instruments: opm_a connected: XSIM,OPM-8,opm_a,1.0
+2026-11-23 18:25:55,420 INFO    ate.runner: === Condition 40C: setpoint 40.00 C ===
+2026-11-23 18:25:55,432 INFO    ate.runner: tec_main: temperature verified, 39.914 C (stable for 10 s; settle attempt 1, 47 s)
+2026-11-23 18:25:55,432 INFO    ate.runner: Measuring 50 readings x 8 channels (all mode, 100 ms averaging)
+2026-11-23 18:25:55,437 INFO    ate.runner: opm_a: channel 4 GARBLED on reading 10, re-reading that channel only
+2026-11-23 18:25:55,544 INFO    ate.runner: tec_main: GARBLED on monitor reading 13, retrying
+2026-11-23 18:25:55,661 INFO    ate.runner: opm_a: channel 2 GARBLED on reading 34, re-reading that channel only
+2026-11-23 18:25:55,780 INFO    ate.instruments: opm_a disconnected
+2026-11-23 18:25:55,780 INFO    ate.instruments: tec_main disconnected
+2026-11-23 18:25:55,799 INFO    ate.bench: simulator bench stopped
+2026-11-23 18:25:55,805 INFO    ate.runner: 
+Device SN-0001 | run 20261123-182555_SN-0001_904c
+
+Condition 40C: temperature PASS [tec_main PASS 39.91 C]
+   Ch  Meter:In    Avg dBm      Min      Max     Std Valid  Inv  T/O Garb  N/M Retry  Result
+    1  opm_a:1       0.106    0.019    0.240   0.049    50    0    0    0    0     0  PASS
+    2  opm_a:2      -0.254   -0.351   -0.163   0.042    50    0    0    0    0     1  PASS
+    3  opm_a:3       0.052   -0.091    0.118   0.044    50    0    0    0    0     0  PASS
+    4  opm_a:4      -0.400   -0.506   -0.289   0.055    50    0    0    0    0     1  PASS
+    5  opm_a:5       0.150    0.020    0.263   0.052    50    0    0    0    0     0  PASS
+    6  opm_a:6      -0.104   -0.196    0.013   0.048    50    0    0    0    0     0  PASS
+    7  opm_a:7       0.196    0.132    0.268   0.035    50    0    0    0    0     0  PASS
+    8  opm_a:8      -0.039   -0.135    0.086   0.052    50    0    0    0    0     0  PASS
+
+OVERALL: PASS
+2026-11-23 18:25:55,805 INFO    ate.runner: Run status: COMPLETE | results in sample_results/20261123-182555_SN-0001_904c
