@@ -1,6 +1,6 @@
 # Optical Module Test Automation (simulated instruments)
 
-A modular Python system that tests an 8-channel optical module. It drives a temperature controller (TEC) and a multi-input optical power meter (OPM), takes the measurements, decides pass/fail, and saves raw data and a summary for every run.
+A modular Python system that tests an 8-channel optical module. It drives a temperature controller (TEC) and a multi-input optical power meter (OPM), takes the measurements, decides pass/fail, and saves raw data, a summary and charts for every run.
 
 Physical instruments are not available, so they are **simulated**. The simulators are separate network programs that speak a text command language, so the test software talks to them exactly as it would to real hardware.
 
@@ -8,7 +8,7 @@ Physical instruments are not available, so they are **simulated**. The simulator
 |---|---|
 | [docs/DESIGN.md](docs/DESIGN.md) | Full design: understanding the data, architecture, error handling, extensibility |
 | [docs/TESTING.md](docs/TESTING.md) | How the system was verified, including every error scenario |
-| [sample_results/](sample_results/) | Example runs (raw CSV, summary CSV, charts, logs) |
+| [sample_results/](sample_results/) | Six example runs (raw CSV, summary CSV, charts, logs). See [Sample results](#sample-results) |
 
 ---
 
@@ -17,12 +17,18 @@ Physical instruments are not available, so they are **simulated**. The simulator
 Requires Python 3.11 or newer.
 
 ```bash
+git clone https://github.com/Yas-Has/optical-module-test-automation.git
+cd optical-module-test-automation
 python3 -m venv .venv
 source .venv/bin/activate
-pip install ".[dev]"
+pip install ".[dev]"          # the program, charts (matplotlib) and pytest
 
 ate run                       # full test with the default (brief) configuration
 ```
+
+Other install options: `pip install .` (just the program, no charts) or `pip install ".[plots]"` (program and charts, no pytest).
+
+`ate` stands for **Automatic Test Equipment**, the industry term for a computer driving instruments to test a product.
 
 That one command starts the simulated bench in the background, runs the test, stops the bench, and prints a result table:
 
@@ -34,7 +40,7 @@ Condition 40C: temperature PASS [tec_main PASS 39.91 C]
 OVERALL: PASS
 ```
 
-Results go to `results/<date-time>_<serial>_<id>/`. A new folder is created for every run, so earlier runs are never overwritten.
+Results go to `results/<date-time>_<serial>_<id>/`: raw data, summary, charts and logs. A new folder is created for every run, so earlier runs are never overwritten.
 
 ### Useful commands
 
@@ -69,6 +75,42 @@ Exit codes: `0` device passed, `1` device failed, `2` run aborted or invalid inp
 
 Example configs use `extends: ../default.yaml` and override only what differs.
 
+### Changing the settings
+
+Every number the system uses is in `config/default.yaml`, with a comment on each. The ones you're most likely to change:
+
+| Setting | Default | What it does |
+|---|---|---|
+| `limits.avg_power_dbm` | `{min: -3.0, max: 3.0}` | Pass band for each channel's average power (inclusive) |
+| `limits.max_bad_readings` | `0` | Bad readings (invalid, timed out, garbled, not measured) a channel may have and still pass. Must be fewer than the readings taken |
+| `limits.require_all_valid` | `true` | `false` accepts any number of bad readings |
+| `sequence.conditions` | `[{setpoint_c: 40.0}]` | Temperatures to test at, in order |
+| `sequence.temperature.tolerance_c` | `0.5` | How close to the setpoint counts as reached |
+| `sequence.temperature.max_settle_attempts` | `2` | Settling attempts before temperature verification fails |
+| `sequence.measurement.readings_per_channel` | `50` | Readings per channel per condition |
+| `sequence.measurement.averaging_time_ms` | `100` | Meter averaging time (longer = steadier readings) |
+| `instruments[].max_comm_retries` | `1` | Retries after a timeout or unreadable reply |
+| `instruments[].simulation.faults` | small rates | How often the simulators misbehave (set to 0 for a perfect run) |
+| `run.save_plots` | `true` | Draw charts at the end of each run |
+
+The easiest way is a small file that changes only what you need:
+
+```yaml
+# my_limits.yaml
+extends: config/default.yaml
+limits:
+  avg_power_dbm: { min: -1.0, max: 1.0 }
+  max_bad_readings: 2
+```
+
+```bash
+ate validate --config my_limits.yaml    # catches mistakes in plain language before anything runs
+ate run --config my_limits.yaml
+ate reprocess results/<run> --config my_limits.yaml   # or re-judge an existing run, without re-testing
+```
+
+The summary and the charts both follow the new settings. Tests in `tests/system/test_modified_settings.py` check this for each of the settings above.
+
 ### Running the tests
 
 ```bash
@@ -89,7 +131,7 @@ config/*.yaml ──► Test runner ──► Drivers (TEC, OPM) ──► Trans
               raw_measurements.csv  (written live, row by row)          ├─ OPM simulator   :5102
                      │                                                  ├─ control port    :5100
                      ▼                                                  └─ virtual device
-              analysis ──► summary.csv, run_info.json                      (temperature + 8 lasers)
+              analysis ──► summary.csv, run_info.json, charts (.png)       (temperature + 8 lasers)
 ```
 
 ```
@@ -145,7 +187,31 @@ See [docs/DESIGN.md](docs/DESIGN.md) for the full explanation.
 | `temperature_<condition>.png` | TEC temperature over time against the target band, settling attempts, and when light was measured |
 | `status_<condition>.png` | One square per planned reading, coloured by what happened: valid, valid after retry, timeout/garbled, invalid, not measured |
 
+### Charts
+
+| Power per channel | Temperature | What happened to each reading |
+|---|---|---|
+| ![Power chart from the weak-channel run](sample_results/20261123-182557_SN-WEAK5_4b30/power_40C.png) | ![Temperature chart from the TEC-won't-settle run](sample_results/20261123-182602_SN-HOT_f4b5/temperature_40C.png) | ![Status grid from the flaky-meter run](sample_results/20261123-182558_SN-FLAKY_b4d5/status_40C.png) |
+| Weak-channel run: channel 5 sits below the −3 dBm limit. The diamond is the average used for pass/fail | TEC-won't-settle run: the temperature levels off above the target band, through both settling attempts | Flaky-meter run: whole columns are lost messages re-asked; single squares are one channel re-read alone |
+
 Charts are drawn at the end of every run when matplotlib is installed (`pip install ".[plots]"`; included in `.[dev]`). Turn them off with `run.save_plots: false`. Charts follow the config: limit lines, the target band, pass/fail colours and the number of readings all come from it. Re-checking a run against new limits (`ate reprocess --config`) draws a second set of charts with the same `_reprocessed_<time>` name as the new summary, leaving the originals alone. They are a convenience: if matplotlib is missing or a chart fails to draw, the run and its data are unaffected.
+
+---
+
+## Sample results
+
+Six runs made over the real network bench, in [sample_results/](sample_results/). Each folder has the raw data, summary, charts and logs.
+
+| Folder | Config | Seed | Result |
+|---|---|---|---|
+| `20261123-182555_SN-0001_904c` | default | 2 | PASS |
+| `20261123-182555_SN-0001_b1d8` | default | 42 | FAIL: one impossible reading on channel 3 (kept, never retried) |
+| `20261123-182557_SN-WEAK5_4b30` | weak_channel | 2 | FAIL: channel 5 averages −4.00 dBm |
+| `20261123-182558_SN-FLAKY_b4d5` | flaky_meter | 2 | FAIL: many retries and re-reads, a few impossible readings |
+| `20261123-182602_SN-HOT_f4b5` | tec_wont_settle | 2 | FAIL: temperature never verified; light still measured |
+| `20261123-182603_SN-0001_5873` | two_temperatures | 2 | PASS at 25 °C and 40 °C |
+
+Re-run any of them exactly with `ate run --config <its config_used.yaml> --seed <seed>`.
 
 ---
 
@@ -189,6 +255,7 @@ Details: [docs/DESIGN.md §14](docs/DESIGN.md#14-extensibility).
 ## Troubleshooting
 
 - **"port(s) … are already in use"**: a simulator bench is still running (maybe from `ate bench`). Stop it with Ctrl+C in its terminal, use `ate run --external-bench`, or change `simulation.control_port` / `first_instrument_port`.
+- **No charts in the results folder** (the log says "Charts skipped"): matplotlib isn't installed. Run `pip install ".[plots]"`, then `ate plot results/<run>` to draw charts for runs already made.
 - **`ModuleNotFoundError: No module named 'ate'` after `pip install -e .` on macOS**: if the project is in an iCloud-synced folder (Desktop/Documents), macOS can mark the editable-install path file as hidden, and Python 3.13 ignores hidden path files. Use `pip install .` (non-editable) instead. The test suite reads straight from `src/`, so tests always use the working copy.
 
 ---
