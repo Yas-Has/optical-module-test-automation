@@ -249,7 +249,7 @@ The **test sequence never talks to a simulator directly**, and **no simulator im
 ### 4.3 Project layout
 
 ```
-xscape-test-automation/
+optical-module-test-automation/
 ├── README.md
 ├── pyproject.toml
 ├── config/
