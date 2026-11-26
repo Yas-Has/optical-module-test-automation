@@ -88,3 +88,57 @@ def test_loopback_reply_timeout_and_lost_connection(bench):
         transport.query("POW:ALL?")
     with pytest.raises(ConnectionLost):
         transport.query("*IDN?")  # stays closed
+
+
+# --------------------------------------------------------------------------- docker mode (no Docker needed)
+
+
+def _docker_bench(tmp_path, **overrides):
+    from ate.simulation.control import DockerBenchProcess
+    config = build_config(tmp_path, mode="docker", **overrides)
+    (tmp_path / "run").mkdir(exist_ok=True)
+    return DockerBenchProcess(config, tmp_path / "config_used.yaml", tmp_path / "run" / "bench.log")
+
+
+def test_docker_bench_opens_every_port_to_this_computer_only(tmp_path):
+    process = _docker_bench(tmp_path)
+    process.container = "ate-bench-test"
+    command = process._command()
+    published = [command[i + 1] for i, arg in enumerate(command) if arg == "-p"]
+    assert published == ["127.0.0.1:5100:5100", "127.0.0.1:5101:5101", "127.0.0.1:5102:5102"]
+    assert command[-3:] == ["--listen-host", "0.0.0.0", "--skip-port-check"]
+    mounts = [command[i + 1] for i, arg in enumerate(command) if arg == "-v"]
+    assert mounts[0].endswith("/ate:/ate-src/ate:ro")  # only our own package goes in, never other libraries
+
+
+def test_docker_bench_explains_what_is_missing(tmp_path, monkeypatch):
+    import subprocess
+    from ate.simulation import control
+
+    monkeypatch.setattr(control.shutil, "which", lambda name: None)
+    with pytest.raises(BenchError, match="Is Docker installed"):
+        _docker_bench(tmp_path).start()
+
+    monkeypatch.setattr(control.shutil, "which", lambda name: "/usr/bin/docker")
+    not_running = subprocess.CompletedProcess([], 1)
+    monkeypatch.setattr(control.subprocess, "run", lambda *a, **k: not_running)
+    with pytest.raises(BenchError, match="Docker isn't running"):
+        _docker_bench(tmp_path).start()
+
+    answers = iter([subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 1)])
+    monkeypatch.setattr(control.subprocess, "run", lambda *a, **k: next(answers))
+    with pytest.raises(BenchError, match="docker build -t"):
+        _docker_bench(tmp_path).start()
+
+
+def test_a_docker_run_without_docker_stops_before_creating_anything(tmp_path, monkeypatch, free_ports):
+    from ate.sequence.runner import TestRunner
+    from ate.simulation import control
+
+    monkeypatch.setattr(control.shutil, "which", lambda name: None)
+    base = free_ports(3)
+    config = build_config(tmp_path, mode="docker", simulation__control_port=base,
+                          simulation__first_instrument_port=base + 1)
+    with pytest.raises(BenchError, match="Is Docker installed"):
+        TestRunner(config, console=False).run()
+    assert not (tmp_path / "results").exists()

@@ -22,6 +22,7 @@ from ate.sequence.clock import InProcessSimClock, NetworkSimClock, RunClock, Wal
 from ate.simulation.bench import Bench
 from ate.simulation.control import (
     BenchProcess,
+    DockerBenchProcess,
     ControlClient,
     NetworkBenchControl,
     assign_ports,
@@ -77,7 +78,8 @@ class InstrumentSession:
             factory = self._loopback_factory
         else:
             if not self.external_bench:
-                self._bench_process = BenchProcess(self.config, self.config_path, self.run_dir / "bench.log")
+                process_type = DockerBenchProcess if sim.mode == "docker" else BenchProcess
+                self._bench_process = process_type(self.config, self.config_path, self.run_dir / "bench.log")
                 self._bench_process.start()
             self._control = ControlClient(sim.host, sim.control_port)
             if self.bench_hook:

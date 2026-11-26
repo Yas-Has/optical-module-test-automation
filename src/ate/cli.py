@@ -25,6 +25,8 @@ def _overrides(args: argparse.Namespace) -> dict:
         overrides["run.results_dir"] = args.results_dir
     if getattr(args, "mode", None):
         overrides["simulation.mode"] = args.mode
+    if getattr(args, "listen_host", None):
+        overrides["simulation.listen_host"] = args.listen_host
     if getattr(args, "time_scale", None) is not None:
         overrides["simulation.time_scale"] = args.time_scale
     return overrides
@@ -109,7 +111,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--seed", type=int, help="random seed (replays a previous run exactly)")
     run.add_argument("--serial", help="device serial number")
     run.add_argument("--results-dir", help="where to create the run folder")
-    run.add_argument("--mode", choices=["network", "in_process"], help="how to run the simulators")
+    run.add_argument("--mode", choices=["network", "in_process", "docker"],
+                     help="how to run the simulators (docker: the bench in a container)")
     run.add_argument("--time-scale", type=float, help="1 = real time, 0 = instant")
     run.add_argument("--external-bench", action="store_true",
                      help="connect to a bench already started with `ate bench` instead of starting one")
@@ -118,6 +121,7 @@ def build_parser() -> argparse.ArgumentParser:
     bench = sub.add_parser("bench", help="start the simulated instruments and leave them running")
     add_config(bench)
     bench.add_argument("--seed", type=int)
+    bench.add_argument("--listen-host", help="address to listen on (default: simulation.listen_host or host)")
     bench.add_argument("--skip-port-check", action="store_true", help=argparse.SUPPRESS)
     bench.set_defaults(func=cmd_bench)
 

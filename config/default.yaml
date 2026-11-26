@@ -10,11 +10,14 @@ run:
 simulation:
   enabled: true                   # false = talk to real instruments at the addresses below
   mode: network                   # network: simulators run as a separate program on local ports
+                                  # in_process: inside the test program; docker: in a Docker container
                                   # in_process: simulators run inside the test program (fast tests)
   time_scale: 0.0                 # 1.0 = real time, 0.1 = 10x faster, 0 = instant (data is identical)
-  host: 127.0.0.1
+  host: 127.0.0.1                 # where the test program finds the simulators
+  listen_host: null               # where the simulators listen; null = same as host (Docker uses 0.0.0.0)
   control_port: 5100              # simulator-only port: simulated clock + forcing faults in tests
   first_instrument_port: 5101     # "auto" addresses are assigned upward from here
+  docker_image: optical-module-test-automation   # mode: docker (build once: docker build -t optical-module-test-automation .)
 
   device:                         # the virtual device under test (shared by all instruments)
     channels: 8

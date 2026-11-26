@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+build
+dist
+results
+sample_results
+tests
+docs
+**/__pycache__
+**/*.egg-info
+.pytest_cache
+*.pdf
+.DS_Store

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import logging
 import os
+import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -17,6 +19,9 @@ if TYPE_CHECKING:
     from ate.config import AppConfig
 
 log = logging.getLogger("ate.bench")
+
+PACKAGE_DIR = Path(__file__).resolve().parents[1]  # the `ate` package itself
+SRC_DIR = PACKAGE_DIR.parent                       # the folder holding it
 
 
 class BenchError(Exception):
@@ -66,10 +71,10 @@ def busy_ports(host: str, ports: list[int]) -> list[int]:
 def check_ports_free(config: AppConfig) -> None:
     sim = config.simulation
     wanted = [sim.control_port, *assign_ports(config).values()]
-    taken = busy_ports(sim.host, wanted)
+    taken = busy_ports(sim.probe_host, wanted)
     if taken:
         raise BenchError(
-            f"port(s) {', '.join(map(str, taken))} on {sim.host} are already in use. "
+            f"port(s) {', '.join(map(str, taken))} on {sim.probe_host} are already in use. "
             "Is another simulator bench still running? Stop it (Ctrl+C in its terminal), "
             "use --external-bench to connect to it, or change simulation.first_instrument_port / control_port."
         )
@@ -138,15 +143,9 @@ class BenchProcess:
 
     def start(self, ready_timeout_s: float = 15.0) -> None:
         check_ports_free(self.config)
-        env = dict(os.environ)
-        src_dir = str(Path(__file__).resolve().parents[2])  # make `ate` importable even if not installed
-        env["PYTHONPATH"] = src_dir + os.pathsep + env.get("PYTHONPATH", "")
         self._log_file = open(self.log_path, "w", encoding="utf-8")
         self._process = subprocess.Popen(
-            [sys.executable, "-m", "ate", "bench", "--config", str(self.config_path)],
-            stdout=self._log_file,
-            stderr=subprocess.STDOUT,
-            env=env,
+            self._command(), stdout=self._log_file, stderr=subprocess.STDOUT, env=self._env(),
         )
         sim = self.config.simulation
         deadline = time.monotonic() + ready_timeout_s
@@ -161,12 +160,26 @@ class BenchProcess:
                 continue
             try:
                 client.send("SIM:PING")
-                log.info("simulator bench started (pid %d)", self._process.pid)
-                return
+            except BenchError:  # something accepted the connection but the bench isn't answering yet
+                time.sleep(0.1)
+                continue
             finally:
                 client.close()
+            log.info("simulator bench started (%s)", self._describe())
+            return
         self.stop()
-        raise BenchError(f"the simulator bench did not become ready within {ready_timeout_s:.0f} s")
+        raise BenchError(f"the simulator bench did not become ready within {ready_timeout_s:.0f} s; see {self.log_path}")
+
+    def _command(self) -> list[str]:
+        return [sys.executable, "-m", "ate", "bench", "--config", str(self.config_path)]
+
+    def _env(self) -> dict[str, str]:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(SRC_DIR) + os.pathsep + env.get("PYTHONPATH", "")  # importable even if not installed
+        return env
+
+    def _describe(self) -> str:
+        return f"pid {self._process.pid}"
 
     def stop(self, control: ControlClient | None = None) -> None:
         if self._process is None:
@@ -188,8 +201,58 @@ class BenchProcess:
         log.info("simulator bench stopped")
         self._process = None
         self._finish_log()
+        self._clean_up()
+
+    def _clean_up(self) -> None:
+        """Anything left over once the bench has stopped (nothing, for a local program)."""
 
     def _finish_log(self) -> None:
         if self._log_file is not None:
             self._log_file.close()
             self._log_file = None
+
+
+def check_docker_ready(config: AppConfig) -> None:
+    """Docker installed, running, and the image built; otherwise a clear message saying which."""
+    image = config.simulation.docker_image
+    if not shutil.which("docker"):
+        raise BenchError("simulation.mode is docker, but the docker command was not found. Is Docker installed?")
+    if subprocess.run(["docker", "info"], capture_output=True).returncode != 0:
+        raise BenchError("simulation.mode is docker, but Docker isn't running. Start Docker Desktop and try again.")
+    if subprocess.run(["docker", "image", "inspect", image], capture_output=True).returncode != 0:
+        raise BenchError(f"Docker image '{image}' not found. Build it once, in the project folder, with: docker build -t {image} .")
+
+
+class DockerBenchProcess(BenchProcess):
+    """``ate bench`` inside a Docker container, with its ports opened to this computer only.
+
+    The container runs the code from this working copy (shared into it read-only), so the image
+    only has to provide Python and the libraries; changing a simulator never needs a rebuild.
+    """
+
+    def start(self, ready_timeout_s: float = 60.0) -> None:
+        check_docker_ready(self.config)
+        self.container = "ate-bench-" + re.sub(r"[^a-zA-Z0-9_.-]", "-", self.log_path.parent.name)
+        super().start(ready_timeout_s)
+
+    def _command(self) -> list[str]:
+        sim = self.config.simulation
+        ports = [sim.control_port, *assign_ports(self.config).values()]
+        published = [arg for port in ports for arg in ("-p", f"{sim.probe_host}:{port}:{port}")]
+        return [
+            "docker", "run", "--rm", "--init", "--name", self.container, *published,
+            "-v", f"{PACKAGE_DIR}:/ate-src/ate:ro", "-e", "PYTHONPATH=/ate-src",  # only `ate`, never other libraries
+            "-v", f"{self.config_path.resolve()}:/run-config/config.yaml:ro",
+            sim.docker_image,
+            "python", "-m", "ate", "bench", "--config", "/run-config/config.yaml",
+            "--listen-host", "0.0.0.0", "--skip-port-check",
+        ]
+
+    def _env(self) -> dict[str, str]:
+        return dict(os.environ)
+
+    def _describe(self) -> str:
+        return f"Docker container {self.container}"
+
+    def _clean_up(self) -> None:
+        subprocess.run(["docker", "rm", "-f", self.container], capture_output=True)

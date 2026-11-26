@@ -53,12 +53,24 @@ class DeviceModelConfig(_Model):
 
 class SimulationConfig(_Model):
     enabled: bool = True
-    mode: Literal["network", "in_process"] = "network"
+    mode: Literal["network", "in_process", "docker"] = "network"  # docker: the bench runs in a container
     time_scale: float = Field(0.0, ge=0, le=1)
-    host: str = "127.0.0.1"
+    host: str = "127.0.0.1"  # where the test program finds the bench
+    listen_host: str | None = None  # where the bench listens; None = same as host (Docker: 0.0.0.0)
     control_port: int = Field(5100, ge=1, le=65535)
     first_instrument_port: int = Field(5101, ge=1, le=65535)
+    docker_image: str = Field("optical-module-test-automation", min_length=1)  # used by mode: docker
     device: DeviceModelConfig = Field(default_factory=DeviceModelConfig)
+
+    @property
+    def bind_host(self) -> str:
+        """The address the bench opens its ports on."""
+        return self.listen_host or self.host
+
+    @property
+    def probe_host(self) -> str:
+        """Where to look for a bench already using our ports ("listen everywhere" = check this computer)."""
+        return "127.0.0.1" if self.bind_host in ("0.0.0.0", "") else self.bind_host
 
 
 # Instrument settings live with each instrument (ate/instruments/<name>/settings.py), built on

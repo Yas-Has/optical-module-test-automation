@@ -28,7 +28,9 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "-m 'not docker'"  # the Docker test runs only when asked: pytest -m docker
 markers = [
     "slow: longer statistical tests (run by default; skip with -m 'not slow')",
     "network: starts a real simulator bench on local ports",
+    "docker: runs the simulator bench in a Docker container (needs Docker; pytest -m docker)",
 ]

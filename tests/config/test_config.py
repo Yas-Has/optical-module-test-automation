@@ -38,6 +38,11 @@ def test_every_example_config_is_valid(name):
     load_config(CONFIG_DIR / "examples" / name)
 
 
+def test_bench_listens_where_the_tester_connects_unless_told_otherwise():
+    sim = load_config(CONFIG_DIR / "default.yaml").simulation
+    assert sim.listen_host is None and sim.bind_host == sim.host == sim.probe_host == "127.0.0.1"
+
+
 def test_extends_overrides_only_what_differs():
     config = load_config(CONFIG_DIR / "examples" / "two_temperatures.yaml")
     assert [c.label for c in config.sequence.conditions] == ["25C", "40C"]

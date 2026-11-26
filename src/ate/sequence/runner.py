@@ -42,7 +42,7 @@ from ate.logging_setup import start_run_logging, stop_run_logging
 from ate.sequence.clock import RunClock
 from ate.sequence.session import BenchHook, InstrumentSession
 from ate.sequence.stability import StabilityTracker
-from ate.simulation.control import BenchError, ControlClient, check_ports_free
+from ate.simulation.control import BenchError, ControlClient, check_docker_ready, check_ports_free
 
 log = logging.getLogger("ate.runner")
 
@@ -211,7 +211,7 @@ class TestRunner:
     def _preflight(self) -> int:
         """Checks that need no results folder. Returns the seed to use."""
         sim = self.config.simulation
-        if sim.enabled and sim.mode == "network":
+        if sim.enabled and sim.mode in ("network", "docker"):
             if self.external_bench:
                 client = ControlClient(sim.host, sim.control_port)
                 try:
@@ -219,6 +219,8 @@ class TestRunner:
                 finally:
                     client.close()
             check_ports_free(self.config)
+            if sim.mode == "docker":
+                check_docker_ready(self.config)
         if self.config.run.seed is not None:
             return self.config.run.seed
         return secrets.randbelow(2**31)

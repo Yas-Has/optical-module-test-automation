@@ -94,7 +94,7 @@ class Bench:
 
     async def serve(self, announce: Callable[[str], None] | None = None) -> None:
         self._stop = asyncio.Event()
-        host = self.config.simulation.host
+        host = self.config.simulation.bind_host
         control = None
         try:
             for name in self.simulators:
@@ -111,7 +111,7 @@ class Bench:
             announce(f"simulator bench ready on {host} (seed {self.seed})")
             announce(f"  control port: {self.config.simulation.control_port}")
             for name, port in self.ports.items():
-                announce(f"  {name}: TCPIP::{host}::{port}::SOCKET")
+                announce(f"  {name}: TCPIP::{self.config.simulation.host}::{port}::SOCKET")
         try:
             await self._stop.wait()
         finally:
