@@ -216,9 +216,11 @@ def check_docker_ready(config: AppConfig) -> None:
     """Docker installed, running, and the image built; otherwise a clear message saying which."""
     image = config.simulation.docker_image
     if not shutil.which("docker"):
-        raise BenchError("simulation.mode is docker, but the docker command was not found. Is Docker installed?")
+        raise BenchError("simulation.mode is docker, but Docker isn't installed (the docker command was not found). "
+                         "Install Docker Desktop, or Docker Engine on Linux, and try again.")
     if subprocess.run(["docker", "info"], capture_output=True).returncode != 0:
-        raise BenchError("simulation.mode is docker, but Docker isn't running. Start Docker Desktop and try again.")
+        raise BenchError("simulation.mode is docker, but Docker isn't running (or this user may not use it). "
+                         "Start Docker Desktop, or on Linux: sudo systemctl start docker, and try again.")
     if subprocess.run(["docker", "image", "inspect", image], capture_output=True).returncode != 0:
         raise BenchError(f"Docker image '{image}' not found. Build it once, in the project folder, with: docker build -t {image} .")
 

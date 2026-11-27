@@ -54,7 +54,7 @@ Exit codes: `0` device passed, `1` device failed, `2` run aborted or invalid inp
 
 ### Running in Docker (optional)
 
-A normal `ate run` never uses Docker. To run the simulators in a container instead, build the image once, then add `--mode docker`:
+A normal `ate run` never uses Docker, and Docker isn't needed for anything else in this project. To run the simulators in a container instead, you first need Docker installed and running: [Docker Desktop](https://docs.docker.com/get-docker/) on macOS or Windows, or [Docker Engine](https://docs.docker.com/engine/install/) on Linux. Then build the image once and add `--mode docker`:
 
 ```bash
 docker build -t optical-module-test-automation .   # once
@@ -159,7 +159,7 @@ Re-run any of them exactly with `ate run --config <its config_used.yaml> --seed 
 ## Testing
 
 ```bash
-pytest                    # 228 tests, about 10 seconds
+pytest                    # 229 tests, about 10 seconds
 pytest -m docker          # the Docker test (needs Docker running)
 ```
 
@@ -170,7 +170,8 @@ The `tests/` folder mirrors `src/ate/`, and every error scenario is forced on pu
 ## Troubleshooting
 
 - **"port(s) … are already in use"**: another simulator bench is still running. Stop it, or change `simulation.control_port` / `first_instrument_port`.
-- **"Docker isn't running" / "Docker image … not found"** (with `--mode docker`): start Docker Desktop, or build the image with the command above. Nothing was created, so there's nothing to clean up.
+- **"Docker isn't installed" / "Docker isn't running" / "Docker image … not found"** (with `--mode docker`): install Docker (see [Running in Docker](#running-in-docker-optional)); start it (on Linux, `sudo systemctl start docker`, and your user may need to be in the `docker` group); or build the image with the command above. Nothing was created, so there's nothing to clean up.
+- **"NumPy was built with baseline optimizations (X86_V2) but your machine doesn't support…"**: NumPy 2.4 and later need a processor from about 2009 onwards. Older machines, and virtual machines set to a basic CPU type such as `kvm64` or `qemu64`, don't qualify. Run `pip install "numpy<2.4"`, or set the VM's CPU type to `host`.
 - **No charts** (the log says "Charts skipped"): run `pip install ".[plots]"`, then `ate plot results/<run>`.
 - **`No module named 'ate'` after `pip install -e .` on macOS**: in an iCloud-synced folder, macOS can hide the file an editable install relies on. Use `pip install .` instead.
 

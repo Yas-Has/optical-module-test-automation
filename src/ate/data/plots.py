@@ -39,12 +39,17 @@ GRID_CATEGORIES = [
 ]
 
 
-def plots_available() -> bool:
+def why_no_plots() -> str | None:
+    """None if charts can be drawn; otherwise a plain explanation of why not."""
     try:
         import matplotlib  # noqa: F401
-    except ImportError:
-        return False
-    return True
+    except ModuleNotFoundError as exc:
+        if exc.name == "matplotlib":
+            return 'matplotlib is not installed (pip install ".[plots]")'
+        return f"matplotlib could not be loaded ({exc})"
+    except Exception as exc:  # noqa: BLE001  e.g. a NumPy that doesn't support this CPU
+        return f"matplotlib could not be loaded ({type(exc).__name__}: {' '.join(str(exc).split())})"
+    return None
 
 
 def _safe(label: str) -> str:

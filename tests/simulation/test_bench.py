@@ -116,7 +116,7 @@ def test_docker_bench_explains_what_is_missing(tmp_path, monkeypatch):
     from ate.simulation import control
 
     monkeypatch.setattr(control.shutil, "which", lambda name: None)
-    with pytest.raises(BenchError, match="Is Docker installed"):
+    with pytest.raises(BenchError, match="Docker isn't installed"):
         _docker_bench(tmp_path).start()
 
     monkeypatch.setattr(control.shutil, "which", lambda name: "/usr/bin/docker")
@@ -139,6 +139,6 @@ def test_a_docker_run_without_docker_stops_before_creating_anything(tmp_path, mo
     base = free_ports(3)
     config = build_config(tmp_path, mode="docker", simulation__control_port=base,
                           simulation__first_instrument_port=base + 1)
-    with pytest.raises(BenchError, match="Is Docker installed"):
+    with pytest.raises(BenchError, match="Docker isn't installed"):
         TestRunner(config, console=False).run()
     assert not (tmp_path / "results").exists()

@@ -195,10 +195,10 @@ class TestRunner:
         """Charts are a convenience: a missing library or a drawing problem never fails the run."""
         if not self.config.run.save_plots:
             return
-        from ate.data.plots import plots_available, write_plots
+        from ate.data.plots import why_no_plots, write_plots
 
-        if not plots_available():
-            log.info("Charts skipped: matplotlib is not installed (pip install \".[plots]\")")
+        if problem := why_no_plots():
+            log.info("Charts skipped: %s", problem)
             return
         try:
             files = write_plots(run_dir, load_raw_rows(run_dir / RAW_FILE), summary, self.config)

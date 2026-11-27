@@ -3,12 +3,12 @@
 How the system was verified, including every error scenario. Design background is in [DESIGN.md](DESIGN.md).
 
 ```bash
-pytest                    # 228 tests, about 10 seconds
+pytest                    # 229 tests, about 10 seconds
 pytest -m "not slow"      # skip the 200-run statistical check
 pytest -m docker          # the Docker test (needs Docker running; about 15 seconds)
 ```
 
-**Result at time of writing: 228 passed, 0 failed; Docker test passed** (Python 3.13, macOS).
+**Result at time of writing: 229 passed, 0 failed; Docker test passed** (Python 3.13, macOS).
 
 ---
 

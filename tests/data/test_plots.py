@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import builtins
+
 import pytest
 
 from ate.cli import main
@@ -53,11 +55,30 @@ def test_charts_turned_off_in_config_are_not_drawn(tmp_path):
     assert not list(result.run_dir.glob("*.png"))
 
 
+def _matplotlib_import_fails(monkeypatch, error: Exception) -> None:
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "matplotlib" or name.startswith("matplotlib."):
+            raise error
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+
 def test_missing_matplotlib_skips_charts_and_the_run_still_passes(tmp_path, monkeypatch):
-    monkeypatch.setattr(plots, "plots_available", lambda: False)
+    _matplotlib_import_fails(monkeypatch, ModuleNotFoundError("No module named 'matplotlib'", name="matplotlib"))
     result = run(build_config(tmp_path, clean=True, run__save_plots=True))
     assert result.overall_result == "PASS" and not list(result.run_dir.glob("*.png"))
-    assert "Charts skipped" in (result.run_dir / "run.log").read_text()
+    assert "Charts skipped: matplotlib is not installed" in (result.run_dir / "run.log").read_text()
+
+
+def test_matplotlib_that_is_installed_but_broken_is_not_called_missing(monkeypatch):
+    # e.g. NumPy 2.4+ on a CPU (or VM) without the features it needs
+    _matplotlib_import_fails(monkeypatch, RuntimeError("NumPy was built with baseline optimizations: \n(X86_V2)"))
+    problem = plots.why_no_plots()
+    assert problem == "matplotlib could not be loaded (RuntimeError: NumPy was built with baseline optimizations: (X86_V2))"
+    assert "not installed" not in problem
 
 
 def test_a_drawing_error_never_fails_the_run(tmp_path, monkeypatch):
