@@ -179,4 +179,4 @@ The `tests/` folder mirrors `src/ate/`, and every error scenario is forced on pu
 
 ## AI assistance disclosure
 
-AI assistance (Claude, by Anthropic) was used to discuss and refine the design, research existing Python instrument-simulation libraries, draft documentation, and write and review code and tests. All design decisions were discussed and made by the author, who reviewed, ran and tested the code.
+AI assistance (Claude) was used to discuss and refine the design, research existing Python instrument-simulation libraries, draft documentation, and write and review code and tests. All design decisions were discussed and made by me @yas-has, who reviewed / fixed, ran and tested the code.
